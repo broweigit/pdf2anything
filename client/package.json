@@ -6,6 +6,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "^5.0.1",
     "@babel/core": "^7.16.0",
     "@iconify/icons-ant-design": "^1.2.5",
     "@iconify/react": "^4.1.0",
