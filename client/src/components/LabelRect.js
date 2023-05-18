@@ -74,6 +74,7 @@ const LabelRect = ({ x, y, width, height, label, isSelected, onSelect, callRectV
   // 左键单击
   const handleClick = (event) => {
     onSelect()
+    // 获得当前rect相对与图片的像素位置
     const rect = rectRef.current;
     const stage = rect.getStage();
     const rectAbs = rect.getClientRect();

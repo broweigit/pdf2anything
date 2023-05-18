@@ -72,15 +72,22 @@ async function extractPlot(cropCanvas, setFormValue, x1, x2, y1, y2, refColor) {
     // fs.writeFileSync(outputCSVFile, csv);
 
   let result = [];
+  let plotResult = [];
   for (let pi = 0; pi < ds.getCount(); pi++) {
     let pt = ds.getPixel(pi);
     let data = axes.pixelToData(pt.x, pt.y);
     result.push([data[0], data[1]]);
+    plotResult.push({
+      label: 'res',
+      x: pt.x,
+      y: pt.y,
+      dataX: data[0],
+      dataY: data[1]
+    });
   }
 
-  console.log(result)
-
   setFormValue(JSON.stringify(result));
+  return plotResult;
 }
 
 export default extractPlot;

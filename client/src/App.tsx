@@ -3,8 +3,10 @@ import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/
 import { Layout, theme, ConfigProvider } from 'antd';
 
 import SidebarComponent from './components/SidebarComponent';
-import StageComponent from './components/StageComponent';
 import HeaderComponent from './components/HeaderComponent';
+
+import StageComponent from './components/StageComponent';
+import PlotStageComponent from './components/PlotStageComponent';
 
 import getLayout from './services/layoutAnalysis';
 
@@ -28,6 +30,11 @@ function App() {
 
   // 鼠标点击LabelRect, 控制当前选中ID
   const [selectedId, setSelectedId] = useState(null);
+  // 识别结果表单的值，由于plot需要，故提升至App.js
+  const [formValue, setFormValue] = useState(''); 
+
+  //  当前Stage模式：['doc', 'plot']
+  const [currStage, setCurrStage] = useState('doc');
 
   // 赋值rectData触发drawRectLayer
   useEffect(() => {
@@ -134,20 +141,34 @@ function App() {
           <Layout>
             <SidebarComponent menuItems={items2} />
             <Layout>
-              <StageComponent 
-                width={window.innerWidth - 225} 
-                height={window.innerHeight - 85} 
-                rectLayer={rectLayer}
-                rectView={rectView}
-                setRectView={setRectView}
-                selectedId={selectedId}
-                setSelectedId={setSelectedId}
-                img={img}
-                setImg={setImg}
-                cropCanvas={cropCanvas}
-                setCropCanvas={setCropCanvas}
-                ocrLang={ocrLang}
+              {currStage === 'doc' ? (
+                <StageComponent 
+                  width={window.innerWidth - 225} 
+                  height={window.innerHeight - 85} 
+                  rectLayer={rectLayer}
+                  rectView={rectView}
+                  setRectView={setRectView}
+                  selectedId={selectedId}
+                  setSelectedId={setSelectedId}
+                  img={img}
+                  setImg={setImg}
+                  cropCanvas={cropCanvas}
+                  setCropCanvas={setCropCanvas}
+                  ocrLang={ocrLang}
+                  setCurrStage={setCurrStage}
+                  formValue={formValue}
+                  setFormValue={setFormValue}
                 />
+              ) : (
+                <PlotStageComponent
+                  width={window.innerWidth - 225} 
+                  height={window.innerHeight - 85} 
+                  cropCanvas={cropCanvas}
+                  currStage={currStage}
+                  setCurrStage={setCurrStage}
+                  setFormValue={setFormValue}
+                />
+              )}
             </Layout>
           </Layout>
         </Layout>

@@ -9,11 +9,13 @@ import MyModal from './CompareModal';
 import { cutImage } from '../utils/cutImgROI';
 import extractTable from '../services/tableExtract';
 import extractText from '../services/textExtract';
-import extractPlot from '../services/plotDigitalize';
 
 const { Content } = Layout;
 
-const StageComponent = ({ width, height, rectLayer, rectView, setRectView, selectedId, setSelectedId, img, setImg, cropCanvas, setCropCanvas, ocrLang }) => {
+const StageComponent = ({ width, height, rectLayer, rectView, setRectView, 
+  selectedId, setSelectedId, img, setImg, cropCanvas, setCropCanvas, 
+  ocrLang, setCurrStage, formValue, setFormValue }) => {
+
     const [stageRef, setStageRef] = useState(null);
     const [uploadRef, setUploadRef] = useState(null);
     // 只有在操作图片时解禁拖动，放缩
@@ -81,7 +83,6 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView, selec
   }
 
   // 鼠标滚轮，放缩整体
-  const [scale, setScale] = useState(1);
   
   const handleWheel = (e) => {
     if (!isImgLoaded) {
@@ -110,7 +111,6 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView, selec
   };
 
   // 识别结果对比表单
-  const [formValue, setFormValue] = useState(''); // 表单的值
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSubmit = () => {
@@ -166,14 +166,8 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView, selec
         extractText(bbox, setFormValue, ocrLang);
       }
       else if (rectTarget.label === 'figure') {
-        // 数据提取
-        // Debug Test
-        const x1 = [461,688,'0','0'];
-        const x2 = [1785,688,'3','0'];
-        const y1 = [461,688,'0','0'];
-        const y2 = [461,204,'0','2'];
-        const refColor = [228,49,52];
-        extractPlot(canvas, setFormValue, x1,x2,y1,y2,refColor);
+        // Stage转交给plot
+        setCurrStage('plot');
       }
 
       setCropCanvas(canvas);
@@ -216,8 +210,8 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView, selec
                 width={width} 
                 height={height} 
                 ref={setStageRef}
-                scaleX={scale}
-                scaleY={scale}
+                scaleX={1}
+                scaleY={1}
                 onWheel={handleWheel}
                 draggable={isImgLoaded}
             >
