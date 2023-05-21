@@ -32,7 +32,7 @@ def create_app():
     @app.route('/table-extract', methods=['GET'])
     def get_table_extract():
         bbox = request.args.get('bbox')
-        bbox = [int(i) for i in bbox[1:-1].split(',')]
+        bbox = [int(float(i)) for i in bbox[1:-1].split(',')]
 
         x, y, w, h = bbox
         img_roi = current_app.img[y:y+h, x:x+w]
@@ -49,7 +49,7 @@ def create_app():
     def get_text_extract():
         bbox = request.args.get('bbox') 
         lang = request.args.get('lang') 
-        bbox = [int(i) for i in bbox[1:-1].split(',')] 
+        bbox = [int(float(i)) for i in bbox[1:-1].split(',')] 
 
         x, y, w, h = bbox
         img_roi = current_app.img[y:y+h, x:x+w]
