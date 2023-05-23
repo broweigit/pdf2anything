@@ -59,7 +59,7 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
             // stage.offsetY(-offY);
             stage.position({x: offX, y: offY})
             uploadRef.visible(false);
-            layer.batchDraw();
+            layer.destroyChildren();
             layer.add(
               new window.Konva.Image({
                 image: konvaImg,
@@ -246,7 +246,7 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
                     y={rect.y}
                     width={rect.width}
                     height={rect.height}
-                    label={rect.label}
+                    initLabel={rect.label}
                     isSelected={selectedId === rect.id}
                     onSelect={rect.onSelect}
                     callRectView={(caller, newProps) => callRectView(rect.id, caller, newProps)}

@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "jquery": "^3.7.0",
-    "react-helmet": "^6.1.0"
-  }
-}

@@ -7,6 +7,7 @@ class OCRSystem():
         self.text_engine_ch = PaddleOCR(use_angle_cls=True, lang="ch")
         self.text_engine_en = PaddleOCR(use_angle_cls=True, lang="en")
         #self.recovery_engine = PPStructure(recovery=True)
+        # pass
 
     def layout_analysis(self, img):
         layout_result = self.layout_engine(img)

@@ -15,6 +15,7 @@ import drawRectLayer from './utils/rectLayerDraw';
 import ChatBox from './components/ChatBox';
 
 import './live2d.css'
+import ImageJComponent from './components/ImageJComponent';
 
 function App() {
   // 全局数据
@@ -153,23 +154,26 @@ function App() {
     }
   ];
   
-  const items1 = [UserOutlined, LaptopOutlined, NotificationOutlined].map((icon, index) => {
-    const key = String(index + 1);
-  
-    return {
-      key: `sub${key}`,
-      icon: React.createElement(icon),
-      label: `subnav ${key}`,
-  
-      children: new Array(4).fill(null).map((_, j) => {
-        const subKey = index * 4 + j + 1;
-        return {
-          key: subKey,
-          label: `option${subKey}`,
-        };
-      }),
-    };
-  });
+  const items1 = [
+    { 
+      key: 'sub1', 
+      icon: React.createElement(NotificationOutlined),
+      label: '文档识别', 
+      
+      onClick: () => {
+        setCurrStage('doc')
+      } 
+    },
+    { 
+      key: 'sub2',
+      icon: React.createElement(LaptopOutlined),
+      label: 'ImageJ',
+      
+      onClick: () => {
+        setCurrStage('imageJ')
+      } 
+    }
+  ];
   
   const scriptElement0 = document.createElement('script');
   scriptElement0.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
@@ -216,47 +220,56 @@ function App() {
       >
         <Layout>
           <HeaderComponent menuItems={items1} />
-          <Layout>
+          <Layout>  
             <SidebarComponent menuItems={items2} />
-            <Layout>
-            {currStage === 'doc' ? (
-                <StageComponent 
-                  width={stageWidth} 
-                  height={stageHeight} 
-                  rectLayer={rectLayer}
-                  rectView={rectView}
-                  setRectView={setRectView}
-                  selectedId={selectedId}
-                  setSelectedId={setSelectedId}
-                  img={img}
-                  setImg={setImg}
-                  cropCanvas={cropCanvas}
-                  setCropCanvas={setCropCanvas}
-                  ocrLang={ocrLang}
-                  setCurrStage={setCurrStage}
-                  formValue={formValue}
-                  setFormValue={setFormValue}
-                />
-              ) : (
-                <PlotStageComponent
-                  width={stageWidth} 
-                  height={stageHeight} 
-                  cropCanvas={cropCanvas}
-                  currStage={currStage}
-                  setCurrStage={setCurrStage}
-                  setFormValue={setFormValue}
-                />
-              )}
-            </Layout>
-            { showChat && (
-              <Layout>
-                <ChatBox/>
-                <div id="landlord">
-                  <div className="message" style={{opacity: 0}}></div>
-                  <canvas id="live2d" width="280" height="250" className="live2d"></canvas>
-                  <div className="hide-button">隐藏</div>
-                </div>
-              </Layout>
+            {currStage === 'imageJ' ? (
+              <ImageJComponent
+                width={stageWidth} 
+                height={stageHeight} 
+              />
+            ) : (
+              <>
+                <Layout>
+                  {currStage === 'doc' ? (
+                    <StageComponent 
+                      width={stageWidth} 
+                      height={stageHeight} 
+                      rectLayer={rectLayer}
+                      rectView={rectView}
+                      setRectView={setRectView}
+                      selectedId={selectedId}
+                      setSelectedId={setSelectedId}
+                      img={img}
+                      setImg={setImg}
+                      cropCanvas={cropCanvas}
+                      setCropCanvas={setCropCanvas}
+                      ocrLang={ocrLang}
+                      setCurrStage={setCurrStage}
+                      formValue={formValue}
+                      setFormValue={setFormValue}
+                    />
+                  ) : (
+                    <PlotStageComponent
+                      width={stageWidth} 
+                      height={stageHeight} 
+                      cropCanvas={cropCanvas}
+                      currStage={currStage}
+                      setCurrStage={setCurrStage}
+                      setFormValue={setFormValue}
+                    />
+                  )}
+                </Layout>
+                { showChat && (
+                  <Layout>
+                    <ChatBox/>
+                    <div id="landlord">
+                      <div className="message" style={{opacity: 0}}></div>
+                      <canvas id="live2d" width="280" height="250" className="live2d"></canvas>
+                      <div className="hide-button">隐藏</div>
+                    </div>
+                  </Layout>
+                )}
+              </>
             )}
           </Layout>
         </Layout>

@@ -21,7 +21,7 @@ npm --registry=https://registry.npmmirror.com install pnpm -g
 
 3. 安装前端依赖
 ```
-cd ./client
+cd pdf2anything/client
 pnpm install
 ```
 4. 前端运行
@@ -54,3 +54,12 @@ cd /path/to/this/project
 cd ./server
 python server.py
 ```
+
+# 后端环境（加装ImageJ）
+
+???
+https://pyimagej.readthedocs.io/en/latest/Install.html#installing-via-conda-mamba
+
+# 后端环境（加装pytesseract）
+
+???

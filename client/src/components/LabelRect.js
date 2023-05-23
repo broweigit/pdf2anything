@@ -4,7 +4,7 @@ import { Button, Modal } from 'antd';
 
 import LabelRectDropdown from "./LabelRectDropdown";
 
-const LabelRect = ({ x, y, width, height, label, isSelected, onSelect, callRectView }) => {
+const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callRectView }) => {
   const groupRef = useRef();
   const labelRef = useRef();
   const rectRef = useRef();
@@ -15,6 +15,7 @@ const LabelRect = ({ x, y, width, height, label, isSelected, onSelect, callRectV
 
   // 依据颜色设置矩形框颜色
   const [stroke, setStroke] = useState("black");
+  const [label, setLabel] = useState(initLabel);
 
   useEffect(() => {
     switch (label) {
@@ -112,7 +113,9 @@ const LabelRect = ({ x, y, width, height, label, isSelected, onSelect, callRectV
   const handleEditType = (e) => {
       setShowMenu(false);
       // 处理“修改类型”选项
-      alert()
+      setLabel('text');
+      // call update
+      callRectView('update', {label: 'text'});
   };
 
   const handleRemove = (e) => {
