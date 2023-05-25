@@ -3,9 +3,9 @@ import time
 from flask import Response
 import urllib.parse
 
-openai.api_key = "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"
+openai.api_key = "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"
 
-max_response_length = 200
+max_response_length = 400
 
 initial_conversation = [{
             "role": "system", 

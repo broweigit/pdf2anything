@@ -4,7 +4,7 @@ import { SendOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const ChatBox = () => {
 
-  const [messages, setMessages] = useState([{ id: 1, sender: 'Alice', content: 'Hello' },]); // 聊天消息数据
+  const [messages, setMessages] = useState([]); // 聊天消息数据
   const [answering, setAnswering] = useState(false); // 实时显示信息流
 
   const listRef = useRef(null); // 用于在生成内容时始终将滚动条拉到底端
