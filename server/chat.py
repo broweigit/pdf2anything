@@ -3,7 +3,7 @@ import time
 from flask import Response
 import urllib.parse
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 max_response_length = 400
 

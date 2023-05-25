@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 from ocr import OCRSystem
 from chat import ChatSystem
+from fileman import FileManSystem
 
 import cv2
 import numpy as np
@@ -18,53 +19,70 @@ def create_app():
     with app.app_context():
         current_app.ocr = OCRSystem()
         current_app.chat = ChatSystem()
+        current_app.fm = FileManSystem()
 
     @app.route('/upload-image', methods=['POST'])
     def upload_image():
         with app.app_context():
 
             img_file = request.files['image']
-            
-            img_array = np.fromstring(img_file.read(), np.uint8)
-            current_app.img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
-            return 'Image uploaded successfully'
+            return current_app.fm.loadImg(img_file)
+        
+    @app.route('/upload-pdf', methods=['POST'])
+    def upload_pdf():
+        with app.app_context():
+
+            file = request.files['file']  # 获取上传的文件对象
+            if file and file.filename.endswith('.pdf'):
+                return current_app.fm.loadPdf(file)
+            
+    @app.route('/upload-reset', methods=['POST'])
+    def upload_reset():
+        with app.app_context():
+            return current_app.fm.reset()
 
     @app.route('/layout-analysis', methods=['GET'])
     def get_layout_analysis():
-        layout_result = current_app.ocr.layout_analysis(current_app.img)
+        with app.app_context():
+            page_id = request.args.get('pageId') 
+            layout_result = current_app.ocr.layout_analysis(current_app.fm.img_list[int(page_id)])
 
-        return jsonify(layout_result)
+            return jsonify(layout_result)
     
     @app.route('/table-extract', methods=['GET'])
     def get_table_extract():
-        bbox = request.args.get('bbox')
-        bbox = [int(float(i)) for i in bbox[1:-1].split(',')]
+        with app.app_context():
+            bbox = request.args.get('bbox')
+            page_id = request.args.get('pageId') 
+            bbox = [int(float(i)) for i in bbox[1:-1].split(',')]
 
-        x, y, w, h = bbox
-        img_roi = current_app.img[y:y+h, x:x+w]
+            x, y, w, h = bbox
+            img_roi = current_app.fm.img_list[int(page_id)][y:y+h, x:x+w]
 
-        # cv2.imwrite('./roi.jpg', img_roi)
+            # cv2.imwrite('./roi.jpg', img_roi)
 
-        table_result = current_app.ocr.table_analysis(img_roi)
-        # print(table_result[0]['res']['html'])
-        response = make_response(table_result[0]['res']['html'])
-        response.headers['Content-Type'] = 'text/html'
-        return response
+            table_result = current_app.ocr.table_analysis(img_roi)
+            # print(table_result[0]['res']['html'])
+            response = make_response(table_result[0]['res']['html'])
+            response.headers['Content-Type'] = 'text/html'
+            return response
     
     @app.route('/text-extract', methods=['GET'])
     def get_text_extract():
-        bbox = request.args.get('bbox') 
-        lang = request.args.get('lang') 
-        bbox = [int(float(i)) for i in bbox[1:-1].split(',')] 
+        with app.app_context():
+            bbox = request.args.get('bbox') 
+            lang = request.args.get('lang') 
+            page_id = request.args.get('pageId') 
+            bbox = [int(float(i)) for i in bbox[1:-1].split(',')] 
 
-        x, y, w, h = bbox
-        img_roi = current_app.img[y:y+h, x:x+w]
+            x, y, w, h = bbox
+            img_roi = current_app.fm.img_list[int(page_id)][y:y+h, x:x+w]
 
-        # cv2.imwrite('./roi.jpg', img_roi)
+            # cv2.imwrite('./roi.jpg', img_roi)
 
-        text_result = current_app.ocr.text_analysis(img_roi, lang)
-        return text_result
+            text_result = current_app.ocr.text_analysis(img_roi, lang)
+            return text_result
     
     @app.route('/convert-image', methods=['POST'])
     def convert_image():
@@ -87,12 +105,14 @@ def create_app():
     
     @app.route('/chat-stream', methods=['GET'])
     def chat_stream():
-        prompt = request.args.get('prompt') 
-        return current_app.chat.stream_response(prompt)
+        with app.app_context():
+            prompt = request.args.get('prompt') 
+            return current_app.chat.stream_response(prompt)
     
     @app.route('/chat-reset', methods=['POST'])
     def chat_reset():
-        return current_app.chat.reset()
+        with app.app_context():
+            return current_app.chat.reset()
     
     return app
 

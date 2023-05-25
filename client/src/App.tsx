@@ -19,8 +19,10 @@ import ImageJComponent from './components/ImageJComponent';
 
 function App() {
   // 全局数据
-  // 正在操作的img
-  const [img, setImg] = useState(null);
+  // 项目图片列表
+  const [imgList, setImgList] = useState(null);
+  // 当前为第几张图片
+  const [selPageId, setSelPageId] = useState(0);
   const [cropCanvas, setCropCanvas] = useState(null);
   // 识别文字所用的语言
   const [ocrLang, setOcrLang] = useState('en');
@@ -98,7 +100,7 @@ function App() {
       children: [
         { key: '1', label: '开始分析', 
           onClick: () => {
-            getLayout(setRectData);
+            getLayout(setRectData, selPageId);
           } 
         }
       ], 
@@ -149,7 +151,6 @@ function App() {
       label: 'DEBUG',
       onClick: () => {
         console.log(rectView)
-        // console.log(img)
       } 
     }
   ];
@@ -239,8 +240,10 @@ function App() {
                       setRectView={setRectView}
                       selectedId={selectedId}
                       setSelectedId={setSelectedId}
-                      img={img}
-                      setImg={setImg}
+                      imgList={imgList}
+                      setImgList={setImgList}
+                      selPageId={selPageId}
+                      setSelPageId={setSelPageId}
                       cropCanvas={cropCanvas}
                       setCropCanvas={setCropCanvas}
                       ocrLang={ocrLang}

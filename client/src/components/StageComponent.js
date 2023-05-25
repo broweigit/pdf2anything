@@ -1,10 +1,13 @@
 import { React, useState } from 'react';
-import { Stage, Layer, Text, Line, Group, Rect } from 'react-konva';
-import { Layout, theme } from 'antd';
+import { Stage, Layer, Text, Group, Rect, Image } from 'react-konva';
+import { Layout, theme, Affix, Space, Button, FloatButton } from 'antd';
+import { RightOutlined, LeftOutlined, FileOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 
-import sendImage from '../services/sendImage';
 import LabelRect from './LabelRect';
 import MyModal from './CompareModal';
+
+import sendPdf from '../services/sendPdf';
+import sendImage from '../services/sendImage';
 
 import { cutImage } from '../utils/cutImgROI';
 import extractTable from '../services/tableExtract';
@@ -13,69 +16,61 @@ import extractText from '../services/textExtract';
 const { Content } = Layout;
 
 const StageComponent = ({ width, height, rectLayer, rectView, setRectView, 
-  selectedId, setSelectedId, img, setImg, cropCanvas, setCropCanvas, 
+  selectedId, setSelectedId, imgList, setImgList, selPageId, setSelPageId, cropCanvas, setCropCanvas, 
   ocrLang, setCurrStage, formValue, setFormValue }) => {
 
-    const [stageRef, setStageRef] = useState(null);
-    const [uploadRef, setUploadRef] = useState(null);
-    // 只有在操作图片时解禁拖动，放缩
-    const [isImgLoaded, setIsImgLoaded] = useState(false);
+  const [stageRef, setStageRef] = useState(null);
 
-    // 松鼠标，放文件
-    const handleDrop = async (e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        // 读取文件内容并显示
-        const reader = new FileReader();
-        reader.onload = (event) => {
-        const newImg = new window.Image();
-        newImg.src = event.target.result;
-        newImg.onload = async () => {
-          // 发往后端
-          sendImage(file);
-          // 设置前端img
-          setImg(newImg);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    handleFile(files);
+  }
+
+  const handleFileSelect = (e) => {
+    const files = e.target.files;
+    handleFile(files);
+  };
+
+  // 松鼠标，放文件
+  const handleFile = async (files) => {
+
+    for (const file of files) {
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        new Promise((resolve) => {
+          if (file.type === 'application/pdf') {
+            sendPdf(file, resolve);
+          } 
+          else if (file.type.includes('image')) {
+            sendImage(file, resolve);
+          }
+        }).then((image_list) => {
+          setImgList(image_list);
+          const image = image_list[selPageId];
 
           const stage = stageRef.getStage();
-          const layer = stage.findOne('Layer');
-          const konvaImg = new window.Image();
-          konvaImg.src = event.target.result;
-          konvaImg.onload = () => {
-            const ratio = newImg.width / newImg.height;
-            let newScale, offX, offY;
-            if (stage.width() / stage.height() > ratio) {
-              // Stage 宽高比大于图片比例，按高度缩放
-              newScale = stage.height() / newImg.height;
-              offX = (stage.width() - stage.height() * ratio) / 2;
-              offY = 0;
-            } else {
-              // Stage 宽高比小于图片比例，按宽度缩放
-              newScale = stage.width() / newImg.width;
-              offX = 0;
-              offY = (stage.height() - stage.width() / ratio) / 2;
-            }
-            stage.scale({ x: newScale, y: newScale });
-            // stage.offsetX(-offX);
-            // stage.offsetY(-offY);
-            stage.position({x: offX, y: offY})
-            uploadRef.visible(false);
-            layer.destroyChildren();
-            layer.add(
-              new window.Konva.Image({
-                image: konvaImg,
-                x: 0,
-                y: 0,
-                width: newImg.width,
-                height: newImg.height,
-              })
-            );
-            layer.draw();
-
-            setIsImgLoaded(true)
+          const ratio = image.width / image.height;
+          let newScale, offX, offY;
+          if (stage.width() / stage.height() > ratio) {
+            // Stage 宽高比大于图片比例，按高度缩放
+            newScale = stage.height() / image.height;
+            offX = (stage.width() - stage.height() * ratio) / 2;
+            offY = 0;
+          } else {
+            // Stage 宽高比小于图片比例，按宽度缩放
+            newScale = stage.width() / image.width;
+            offX = 0;
+            offY = (stage.height() - stage.width() / ratio) / 2;
           }
-        }
+          stage.scale({ x: newScale, y: newScale });
+          stage.position({x: offX, y: offY})
+        });
+      }
+      reader.readAsDataURL(file);
     }
-    reader.readAsDataURL(file);
+
   }
 
   const handleDragOver = (e) => {
@@ -85,7 +80,7 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
   // 鼠标滚轮，放缩整体
   
   const handleWheel = (e) => {
-    if (!isImgLoaded) {
+    if (!imgList) {
       return;
     }
     e.evt.preventDefault(); // 阻止默认事件
@@ -95,7 +90,7 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
       x: (pointerPos.x - stage.x()) / stage.scaleX(), // 获取鼠标在缩放前画布中的相对位置
       y: (pointerPos.y - stage.y()) / stage.scaleY(),
     };
-    const newScale = Math.max(0.3, stage.scaleX() - e.evt.deltaY / 500); // 计算新的缩放比例
+    const newScale = Math.max(0.2, stage.scaleX() - e.evt.deltaY / 2000); // 计算新的缩放比例
     stage.scale({ x: newScale, y: newScale }); // 缩放画布
     const newPos = {
       x: pointerPos.x - mousePointTo.x * newScale, // 计算缩放后画布需要平移的距离
@@ -151,19 +146,19 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
       const bbox = [rectTarget.x, rectTarget.y, rectTarget.width, rectTarget.height];
 
       // 将cropImg绘制到一个canvas上
-      const canvas = cutImage(img, bbox)
+      const canvas = cutImage(imgList[selPageId], bbox)
 
       let ocrResult = null;
       // 根据label选择service
       if (rectTarget.label === 'table') {
         // 表格识别
-        extractTable(bbox, setFormValue);
+        extractTable(bbox, setFormValue, selPageId);
       }
       else if (rectTarget.label === 'title' 
         || rectTarget.label === 'text' 
         || rectTarget.label === 'reference') {
         // 文本识别
-        extractText(bbox, setFormValue, ocrLang);
+        extractText(bbox, setFormValue, ocrLang, selPageId);
       }
       else if (rectTarget.label === 'figure') {
         // Stage转交给plot
@@ -190,9 +185,43 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
     }
   }
 
+  const handleFileButtonClick = () => {
+    document.getElementById('fileInput').click();
+  };
+
+  const handleNextImage = () => {
+    if (selPageId < imgList.length - 1) {
+      setSelPageId((prevIndex) => prevIndex + 1);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (selPageId > 0) {
+      setSelPageId((prevIndex) => prevIndex - 1);
+    }
+  };
+
+  const handleDelete = () => {
+    setImgList(null);
+    setSelPageId(0);
+    fetch('http://localhost:5000/upload-reset', {
+      method: 'POST',
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log('Reset request sent: Success');
+        } else {
+          console.log('Reset request sent: Error');
+        }
+      })
+      .catch((error) => {
+        console.error('Error resetting Files:', error);
+      });
+  };
+
   // 主题颜色
   const {
-    token: { colorPrimaryBgHover, colorTextHeading },
+    token: { colorPrimaryBgHover, colorTextHeading, colorPrimary },
   } = theme.useToken();
 
   return (
@@ -213,10 +242,10 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
                 scaleX={1}
                 scaleY={1}
                 onWheel={handleWheel}
-                draggable={isImgLoaded}
+                draggable={imgList}
             >
                 <Layer onClick={handleLostFocus}>
-                    <Group visible={true} ref={setUploadRef}>
+                    <Group visible={!imgList}>
                         <Rect
                             x={10}
                             y={10}
@@ -237,6 +266,11 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
                             y={height / 2  - 16}
                         />
                     </Group>
+                    {imgList && (
+                      <Image
+                        image={imgList[selPageId]}
+                      />
+                    )}
                 </Layer>
                 <Layer>
                 {rectLayer.map((rect) => (
@@ -255,6 +289,54 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
 
                 </Layer>
             </Stage>
+            
+            <input
+              id="fileInput"
+              type="file"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+              multiple
+            />
+
+            <FloatButton.Group
+              shape="circle"
+              style={{
+                right: 40,
+              }}
+              trigger="click"
+            >
+              <FloatButton
+                icon={<FileOutlined />}
+                tooltip={<div>Select Files: images, pdf</div>}
+                onClick={handleFileButtonClick}
+                type="primary"
+              />
+              {imgList && (
+                <>
+                  <FloatButton
+                    icon={<LeftOutlined />}
+                    tooltip={<div>Previous Page</div>}
+                    badge={{ count: selPageId, color: colorPrimary}}
+                    onClick={handlePrevImage}
+                  />
+                  <FloatButton
+                    icon={<RightOutlined />}
+                    tooltip={<div>Next page</div>}
+                    badge={{ count: imgList.length - selPageId - 1, color: colorPrimary}}
+                    onClick={handleNextImage}
+                  />
+                  <FloatButton
+                    icon={<PlayCircleOutlined />}
+                    tooltip={<div>Layout analysis</div>}
+                  />
+                  <FloatButton
+                    icon={<DeleteOutlined />}
+                    tooltip={<div>Clear all pages</div>}
+                    onClick={handleDelete}
+                  />
+                </>
+              )}
+            </FloatButton.Group>
 
             <MyModal
               isModalOpen={isModalOpen}
