@@ -55,11 +55,13 @@ cd ./server
 python server.py
 ```
 
-# 后端环境（加装ImageJ）
+# 后端环境（加装ImageJ，pytesseractb）
 
 ???
 https://pyimagej.readthedocs.io/en/latest/Install.html#installing-via-conda-mamba
 
-# 后端环境（加装pytesseract）
+# 后端环境（redis）
 
-???
+https://blog.csdn.net/weixin_43883917/article/details/114632709?ydreferer=aHR0cHM6Ly9jbi5iaW5nLmNvbS8%3D
+
+Windows: https://github.com/microsoftarchive/redis/releases

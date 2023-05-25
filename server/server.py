@@ -1,12 +1,13 @@
 from flask import Flask, request, current_app, jsonify, make_response
 from flask_cors import CORS
+
+from ocr import OCRSystem
+# from imageJ import IJSystem
+from chat import ChatSystem
+
 import cv2
 import numpy as np
-from ocr import OCRSystem
-from imageJ import IJSystem
 import base64
-import os
-import time
 
 # from ruler import calculate_line_length
 
@@ -17,6 +18,7 @@ def create_app():
 
     with app.app_context():
         current_app.ocr = OCRSystem()
+        current_app.chat = ChatSystem()
         # current_app.imgj = IJSystem()
         # current_app.ijLock = False
         # current_app.idc = 0
@@ -88,6 +90,16 @@ def create_app():
         
         # Return the base64 string as the response
         return base64_data_str
+    
+    
+    @app.route('/chat-stream', methods=['GET'])
+    def chat_stream():
+        prompt = request.args.get('prompt') 
+        return current_app.chat.stream_response(prompt)
+    
+    @app.route('/chat-reset', methods=['POST'])
+    def chat_reset():
+        return current_app.chat.reset()
     
     # @app.route('/imagej-analysis', methods=['POST'])
     # def imagej_analysis():
