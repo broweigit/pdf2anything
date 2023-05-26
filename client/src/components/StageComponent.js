@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useEffect, useState } from 'react';
 import { Stage, Layer, Text, Group, Rect, Image } from 'react-konva';
 import { Layout, theme, Affix, Space, Button, FloatButton } from 'antd';
 import { RightOutlined, LeftOutlined, FileOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -20,6 +20,7 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
   ocrLang, setCurrStage, formValue, setFormValue }) => {
 
   const [stageRef, setStageRef] = useState(null);
+  const [floatButtonOffset, setFloatButtonOffset] = useState(60);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -49,23 +50,7 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
         }).then((image_list) => {
           setImgList(image_list);
           const image = image_list[selPageId];
-
-          const stage = stageRef.getStage();
-          const ratio = image.width / image.height;
-          let newScale, offX, offY;
-          if (stage.width() / stage.height() > ratio) {
-            // Stage 宽高比大于图片比例，按高度缩放
-            newScale = stage.height() / image.height;
-            offX = (stage.width() - stage.height() * ratio) / 2;
-            offY = 0;
-          } else {
-            // Stage 宽高比小于图片比例，按宽度缩放
-            newScale = stage.width() / image.width;
-            offX = 0;
-            offY = (stage.height() - stage.width() / ratio) / 2;
-          }
-          stage.scale({ x: newScale, y: newScale });
-          stage.position({x: offX, y: offY})
+          refreshStagePos(image)
         });
       }
       reader.readAsDataURL(file);
@@ -76,6 +61,33 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
   const handleDragOver = (e) => {
     e.preventDefault();
   }
+
+  // 经常要用的重新定位stage
+  const refreshStagePos = (image) => {
+    const stage = stageRef.getStage();
+    const ratio = image.width / image.height;
+    let newScale, offX, offY;
+    if (stage.width() / stage.height() > ratio) {
+      // Stage 宽高比大于图片比例，按高度缩放
+      newScale = stage.height() / image.height;
+      offX = (stage.width() - stage.height() * ratio) / 2;
+      offY = 0;
+    } else {
+      // Stage 宽高比小于图片比例，按宽度缩放
+      newScale = stage.width() / image.width;
+      offX = 0;
+      offY = (stage.height() - stage.width() / ratio) / 2;
+    }
+    stage.scale({ x: newScale, y: newScale });
+    stage.position({x: offX, y: offY})
+  }
+
+  useEffect(() => {
+    if (imgList) {
+      refreshStagePos(imgList[selPageId]);
+    }
+    setFloatButtonOffset(window.innerWidth - width - 220 + 60);
+  }, [width, height]);
 
   // 鼠标滚轮，放缩整体
   
@@ -192,18 +204,23 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
   const handleNextImage = () => {
     if (selPageId < imgList.length - 1) {
       setSelPageId((prevIndex) => prevIndex + 1);
+      refreshStagePos(imgList[selPageId + 1]);
     }
   };
 
   const handlePrevImage = () => {
     if (selPageId > 0) {
       setSelPageId((prevIndex) => prevIndex - 1);
+      refreshStagePos(imgList[selPageId - 1]);
     }
   };
 
   const handleDelete = () => {
     setImgList(null);
     setSelPageId(0);
+    const stage = stageRef;
+    stage.scale({ x: 1, y: 1 });
+    stage.position({x: 0, y: 0})
     fetch('http://localhost:5000/upload-reset', {
       method: 'POST',
     })
@@ -298,10 +315,33 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
               multiple
             />
 
+            {imgList && (
+              <>
+                <FloatButton
+                  icon={<LeftOutlined />}
+                  tooltip={<div>Previous Page</div>}
+                  badge={{ count: selPageId, color: colorPrimary}}
+                  onClick={handlePrevImage}
+                  style={{
+                    right: 100 + floatButtonOffset,
+                  }}
+                />
+                <FloatButton
+                  icon={<RightOutlined />}
+                  tooltip={<div>Next page</div>}
+                  badge={{ count: imgList.length - selPageId - 1, color: colorPrimary}}
+                  onClick={handleNextImage}
+                  style={{
+                    right: 50 + floatButtonOffset,
+                  }}
+                />
+              </>
+            )}
+
             <FloatButton.Group
               shape="circle"
               style={{
-                right: 40,
+                right: floatButtonOffset,
               }}
               trigger="click"
             >
@@ -313,18 +353,6 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
               />
               {imgList && (
                 <>
-                  <FloatButton
-                    icon={<LeftOutlined />}
-                    tooltip={<div>Previous Page</div>}
-                    badge={{ count: selPageId, color: colorPrimary}}
-                    onClick={handlePrevImage}
-                  />
-                  <FloatButton
-                    icon={<RightOutlined />}
-                    tooltip={<div>Next page</div>}
-                    badge={{ count: imgList.length - selPageId - 1, color: colorPrimary}}
-                    onClick={handleNextImage}
-                  />
                   <FloatButton
                     icon={<PlayCircleOutlined />}
                     tooltip={<div>Layout analysis</div>}

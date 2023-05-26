@@ -47,7 +47,9 @@ function App() {
 
   // 赋值rectData触发drawRectLayer
   useEffect(() => {
-    drawRectLayer(rectData, setRectLayer, setSelectedId);
+    if (imgList) {
+      drawRectLayer(rectData, setRectLayer, setSelectedId, imgList[selPageId]);
+    }
   }, [rectData]);
 
   // 拷贝rectLayer至RectView

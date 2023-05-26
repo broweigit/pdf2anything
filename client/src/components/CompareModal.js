@@ -49,12 +49,16 @@ function MyModal({isModalOpen, setIsModalOpen, formValue, setFormValue, onConfir
   return (
     
     <Modal title="识别结果" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ display: 'flex' }}>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div>{cropCanvas ? <img src={cropCanvas.toDataURL()} alt="Cropped" /> : null}</div>
-      <RightOutlined style={{ margin: '0 10px', fontSize: '30px'}} />
-      <div style={{ flex: 1, overflow: 'auto' }}>{renderFormContent()}</div>
-    </div>
-  </Modal>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ flex: '1', width: '30vw', overflow: 'auto' }}>
+          {cropCanvas ? <img src={cropCanvas.toDataURL()} alt="Cropped" style={{ width: '100%' }} /> : null}
+        </div>
+        <RightOutlined style={{ margin: '0 10px', fontSize: '30px'}} />
+        <div style={{ flex: '1', width: '30vw', overflow: 'auto' }}>
+          {renderFormContent()}
+        </div>
+      </div>
+    </Modal>
   );
 }
 

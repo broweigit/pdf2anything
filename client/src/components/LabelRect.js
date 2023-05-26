@@ -3,6 +3,7 @@ import { Rect, Group, Text, Tag, Label, Transformer } from "react-konva";
 import { Button, Modal } from 'antd';
 
 import LabelRectDropdown from "./LabelRectDropdown";
+import calcImagePos from "../utils/calcImagePos";
 
 const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callRectView }) => {
   const groupRef = useRef();
@@ -94,10 +95,12 @@ const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callR
     const rect = rectRef.current;
     const stage = rect.getStage();
     const rectAbs = rect.getClientRect();
+    const rectStagePos = {x: rectAbs.x, y: rectAbs.y};
+    const rectRelPos = calcImagePos(rectStagePos, stage);
     // call update
     callRectView('update', {
-      x: (rectAbs.x - stage.x()) / stage.scaleX(), 
-      y: (rectAbs.y - stage.y()) / stage.scaleY(), 
+      x: rectRelPos.x, 
+      y: rectRelPos.y, 
       width: rect.width(), 
       height: rect.height()
     });

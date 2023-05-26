@@ -2,8 +2,12 @@ import openai
 import time
 from flask import Response
 import urllib.parse
+from configparser import ConfigParser
 
-openai.api_key = "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"
+config = ConfigParser()
+config.read("key.ini")
+
+openai.api_key = config.get("openai", "api_key")
 
 max_response_length = 400
 
