@@ -1,0 +1,9 @@
+.demo-logo {
+    background-image: url('./icon.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 110px;
+    height: 45px;
+    margin: 20px; 
+  }

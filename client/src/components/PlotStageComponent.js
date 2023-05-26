@@ -1,6 +1,7 @@
 import { React, useState, useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Text } from 'react-konva';
-import { Layout, theme, Modal, Form, Input } from 'antd';
+import { Layout, theme, Modal, Form, Input, FloatButton } from 'antd';
+import { CheckCircleOutlined } from '@ant-design/icons';
 
 import LabelDot from './LabelDot';
 import calcImagePos from '../utils/calcImagePos';
@@ -8,7 +9,7 @@ import extractPlot from '../services/plotDigitalize';
 
 const { Content } = Layout;
 
-const PlotStageComponent = ({ width, height, cropCanvas, currStage, setCurrStage, setFormValue }) => {
+const PlotStageComponent = ({ width, height, cropCanvas, currStage, setFormValue }) => {
   const stageRef = useRef(null);
   const imgLayerRef = useRef(null);
   const dotLayerRef = useRef(null);
@@ -255,84 +256,84 @@ const PlotStageComponent = ({ width, height, cropCanvas, currStage, setCurrStage
                 background: colorPrimaryBgHover
             }}
         >
-            <Stage 
-                width={width} 
-                height={height} 
-                ref={stageRef}
-                scaleX={1}
-                scaleY={1}
-                onWheel={handleWheel}
-                onClick={handleStageClick}
-                onMouseMove={handleMouseMove}
-                draggable={true}
-            >
-                <Layer ref={imgLayerRef}>
-                </Layer>
+          <Stage 
+              width={width} 
+              height={height} 
+              ref={stageRef}
+              scaleX={1}
+              scaleY={1}
+              onWheel={handleWheel}
+              onClick={handleStageClick}
+              onMouseMove={handleMouseMove}
+              draggable={true}
+          >
+              <Layer ref={imgLayerRef}>
+              </Layer>
 
-                <Layer ref={dotLayerRef}>
-                  {dotsData.map((dot) => (
-                    <LabelDot label={dot.label} x={dot.x} y={dot.y} dataX={dot.dataX} dataY={dot.dataY} />
-                  ))}
-                </Layer>
-                { (opState === 'Ref') && (
-                  <Layer>
-                    {/* 取色框 */}
-                    <Rect
-                      x={0}
-                      y={0}
-                      width={30}
-                      height={30}
-                      stroke={'black'}
-                      fill={color}
-                      ref={colorRectRef}
-                      
-                    />
-                    <Text
-                      x={0}
-                      y={0}
-                      text={`RGB: ${rgb}`}
-                      ref={colorTextRef}
-                    />
-                  </Layer>
-                )}
-
-            </Stage>
-            <Modal
-              title="Anchor"
-              open={isModalVisible}
-              onOk={handleModalConfirm}
-              onCancel={handleModalCancel}
-            >
-              <Form ref={formRef}>
-                {Object.entries(modalForm).map(([key, value]) => (
-                  <Form.Item key={key} label={key}>
-                    <Input
-                      value={value}
-                      onChange={e => {
-                        const updatedValue = e.target.value;
-                        setModalForm(prevForm => ({
-                          ...prevForm,
-                          [key]: updatedValue,
-                        }));
-                      }}
-                    />
-                  </Form.Item>
+              <Layer ref={dotLayerRef}>
+                {dotsData.map((dot) => (
+                  <LabelDot label={dot.label} x={dot.x} y={dot.y} dataX={dot.dataX} dataY={dot.dataY} />
                 ))}
-              </Form>
-            </Modal>
-            <Modal
-              title="Confirm"
-              open={isConfirmModalVisible}
-              onOk={handleConfirmModalConfirm}
-              onCancel={handleConfirmModalCancel}
-            >
-              <p>{`X轴:从(${modalForm.X1?.dataX}, ${modalForm.X1?.dataY})到(${modalForm.X2?.dataX}, ${modalForm.X2?.dataY})`}</p>
-              <p>{`Y轴:从(${modalForm.Y1?.dataX}, ${modalForm.Y1?.dataY})到(${modalForm.Y2?.dataX}, ${modalForm.Y2?.dataY})`}</p>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <p style={{ marginRight: '10px' }}>{`目标颜色：`}</p>
-                <div style={{ backgroundColor: color, width: '20px', height: '20px' }}></div>
-              </div>
-            </Modal>
+              </Layer>
+              { (opState === 'Ref') && (
+                <Layer>
+                  {/* 取色框 */}
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={30}
+                    height={30}
+                    stroke={'black'}
+                    fill={color}
+                    ref={colorRectRef}
+                    
+                  />
+                  <Text
+                    x={0}
+                    y={0}
+                    text={`RGB: ${rgb}`}
+                    ref={colorTextRef}
+                  />
+                </Layer>
+              )}
+
+          </Stage>
+          <Modal
+            title="Anchor"
+            open={isModalVisible}
+            onOk={handleModalConfirm}
+            onCancel={handleModalCancel}
+          >
+            <Form ref={formRef}>
+              {Object.entries(modalForm).map(([key, value]) => (
+                <Form.Item key={key} label={key}>
+                  <Input
+                    value={value}
+                    onChange={e => {
+                      const updatedValue = e.target.value;
+                      setModalForm(prevForm => ({
+                        ...prevForm,
+                        [key]: updatedValue,
+                      }));
+                    }}
+                  />
+                </Form.Item>
+              ))}
+            </Form>
+          </Modal>
+          <Modal
+            title="Confirm"
+            open={isConfirmModalVisible}
+            onOk={handleConfirmModalConfirm}
+            onCancel={handleConfirmModalCancel}
+          >
+            <p>{`X轴:从(${modalForm.X1?.dataX}, ${modalForm.X1?.dataY})到(${modalForm.X2?.dataX}, ${modalForm.X2?.dataY})`}</p>
+            <p>{`Y轴:从(${modalForm.Y1?.dataX}, ${modalForm.Y1?.dataY})到(${modalForm.Y2?.dataX}, ${modalForm.Y2?.dataY})`}</p>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <p style={{ marginRight: '10px' }}>{`目标颜色：`}</p>
+              <div style={{ backgroundColor: color, width: '20px', height: '20px' }}></div>
+            </div>
+          </Modal>
         </Content>
     </Layout>
   );

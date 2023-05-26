@@ -1,6 +1,6 @@
 import { React, useEffect, useState } from 'react';
 import { Stage, Layer, Text, Group, Rect, Image } from 'react-konva';
-import { Layout, theme, Affix, Space, Button, FloatButton } from 'antd';
+import { Layout, theme, FloatButton } from 'antd';
 import { RightOutlined, LeftOutlined, FileOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import LabelRect from './LabelRect';
@@ -12,10 +12,11 @@ import sendImage from '../services/sendImage';
 import { cutImage } from '../utils/cutImgROI';
 import extractTable from '../services/tableExtract';
 import extractText from '../services/textExtract';
+import { resetUpload } from '../services/reset';
 
 const { Content } = Layout;
 
-const StageComponent = ({ width, height, rectLayer, rectView, setRectView, 
+const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRectView, 
   selectedId, setSelectedId, imgList, setImgList, selPageId, setSelPageId, cropCanvas, setCropCanvas, 
   ocrLang, setCurrStage, formValue, setFormValue }) => {
 
@@ -121,8 +122,10 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSubmit = () => {
-    // 在这里处理表单提交的逻辑，例如发送请求等操作
+    // 在这里处理表单提交的逻辑，包括更新RectView，以及绘制？？TODO
     console.log('表单提交成功', formValue);
+    
+    RectViewUpdate(selectedId, {result: formValue});
   };
 
   const handleClear = () => {
@@ -131,36 +134,27 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
     console.log('表单已清空');
   };
 
-  // 用于给LabelRect变换后更新rectLayer
+  // LabelRect对象发生任何变化，都需要向上通过call函数以不同命令更新rectLayer
   const callRectView = (id, caller, newProps) => {
 
     // 更新：将新数据覆盖到对应id的View上
     if (caller === 'update') {
-      setRectView(prevState => prevState.map(rect => {
-        if (rect.id === id) {
-          return {
-            ...rect,
-            ...newProps,
-          };
-        }
-        return rect;
-      }));
+      RectViewUpdate(id, newProps);
     }
     
     // 删除对应id的View
     else if (caller === 'delete') {
-      setRectView(prevState => prevState.filter(rect => rect.id !== id));
+      RectViewDelete(id);
     }
 
     // OCR提取信息
     else if (caller === 'extract') {
-      const rectTarget = rectView.find(rect => rect.id === id);
+      const rectTarget = rectView[selPageId].find(rect => rect.id === id);
       const bbox = [rectTarget.x, rectTarget.y, rectTarget.width, rectTarget.height];
 
       // 将cropImg绘制到一个canvas上
       const canvas = cutImage(imgList[selPageId], bbox)
 
-      let ocrResult = null;
       // 根据label选择service
       if (rectTarget.label === 'table') {
         // 表格识别
@@ -180,23 +174,48 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
       setCropCanvas(canvas);
       setIsModalOpen(true);
 
-      // 更新RectView
-      setRectView(prevState => prevState.map(rect => {
-        if (rect.id === id) {
-          return {
-            ...rect,
-            ...{result: ocrResult},
-          };
-        }
-        return rect;
-      }));
+      // 更新RectView(延后到Modal Submit)
     }
 
     else {
-      alert('callRectView caller ERROR, No ', caller)
+      alert(`callRectView caller ERROR, No ${caller} is availible`)
     }
   }
+  // 封装将newProps添加到RectView的操作
+  const RectViewUpdate = (id, newProps) => {
+    setRectView(prevState => {
+      const newView = { ...prevState };
+      if (newView[selPageId]) {
+        newView[selPageId] = newView[selPageId].map(rect => {
+          if (rect.id === id) {
+            return {
+              ...rect,
+              ...newProps,
+            };
+          }
+          return rect;
+        });
+      } else {
+        alert('Error, RectView caller run into unexpected pageId!');
+      }
+      return newView;
+    });
+  }
+  // 封装将某id的rect从RectView移除的操作
+  const RectViewDelete = (id) => {
+    setRectView(prevState => {
+      const newView = { ...prevState };
+      if (newView[selPageId]) {
+        newView[selPageId] = prevState[selPageId].filter(rect => rect.id !== id);
+      } else {
+        alert('Error, RectView caller run into unexpected pageId!');
+      }
+      return newView;
+    });
+  }
 
+
+  // 以下为悬浮按钮事件处理
   const handleFileButtonClick = () => {
     document.getElementById('fileInput').click();
   };
@@ -216,24 +235,16 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
   };
 
   const handleDelete = () => {
+    // 清空初始化
+    setRectView({});
+    setRectData([]);
     setImgList(null);
     setSelPageId(0);
+    setSelectedId(null);
     const stage = stageRef;
     stage.scale({ x: 1, y: 1 });
     stage.position({x: 0, y: 0})
-    fetch('http://localhost:5000/upload-reset', {
-      method: 'POST',
-    })
-      .then((response) => {
-        if (response.ok) {
-          console.log('Reset request sent: Success');
-        } else {
-          console.log('Reset request sent: Error');
-        }
-      })
-      .catch((error) => {
-        console.error('Error resetting Files:', error);
-      });
+    resetUpload();
   };
 
   // 主题颜色
@@ -319,16 +330,21 @@ const StageComponent = ({ width, height, rectLayer, rectView, setRectView,
               <>
                 <FloatButton
                   icon={<LeftOutlined />}
-                  tooltip={<div>Previous Page</div>}
                   badge={{ count: selPageId, color: colorPrimary}}
                   onClick={handlePrevImage}
+                  style={{
+                    right: 150 + floatButtonOffset,
+                  }}
+                />
+                <FloatButton
+                  description={`P${selPageId + 1}`}
+                  shape="square"
                   style={{
                     right: 100 + floatButtonOffset,
                   }}
                 />
                 <FloatButton
                   icon={<RightOutlined />}
-                  tooltip={<div>Next page</div>}
                   badge={{ count: imgList.length - selPageId - 1, color: colorPrimary}}
                   onClick={handleNextImage}
                   style={{

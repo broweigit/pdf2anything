@@ -10,7 +10,6 @@ function extractText(bbox, setFormValue, ocrLang, pageId) {
         }
     })
     .then(function(response) {
-        console.log(response.data)
         setFormValue(response.data)
     })
     .catch(function(error) {

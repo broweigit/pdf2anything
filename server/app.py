@@ -1,6 +1,8 @@
 from flask import Flask, request, current_app, jsonify, make_response
 from flask_cors import CORS
 
+from flask_sqlalchemy import SQLAlchemy
+
 from ocr import OCRSystem
 from chat import ChatSystem
 from fileman import FileManSystem
@@ -8,18 +10,61 @@ from fileman import FileManSystem
 import cv2
 import numpy as np
 import base64
+import click
+
+import sys
+import os
 
 # from ruler import calculate_line_length
 
 def create_app():
+    # SQLite 配置
+    WIN = sys.platform.startswith('win')
+    if WIN:  # 如果是 Windows 系统，使用三个斜线
+        prefix = 'sqlite:///'
+    else:  # 否则使用四个斜线
+        prefix = 'sqlite:////'
+
     app = Flask(__name__)
     app.config['SECRET_KEY'] = '12010524'
+    app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(app.root_path, 'data.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
+    db = SQLAlchemy(app)
     CORS(app)
-
+    
     with app.app_context():
         current_app.ocr = OCRSystem()
         current_app.chat = ChatSystem()
         current_app.fm = FileManSystem()
+
+    # Table
+    class User(db.Model):  # 表名将会是 user（自动生成，小写处理）
+        id = db.Column(db.Integer, primary_key=True)  # 主键 id
+        username = db.Column(db.String(20))  # 名字
+        account = db.Column(db.String(9))  # 账号 固定9位
+        password = db.Column(db.String(30))  # 密码
+
+    class Project(db.Model):  # 表名将会是 project
+        id = db.Column(db.Integer, primary_key=True)  # 主键 id
+        name = db.Column(db.String(20))  # 项目的名称
+        user_id = db.Column(db.Integer)  # 所属用户的id
+
+
+    class File(db.Model):  # 表名将会是 model
+        id = db.Column(db.Integer, primary_key=True)  # 主键 id
+        type = db.Column(db.String(20))  # 文件的类型，根据文件的类型可以把文件转成长文本或者把长文本转成文件，文件的类型可以是文件夹
+        name = db.Column(db.String(20))  # 文件的名字
+        content = db.Column(db.Text)  # 文件的内容
+
+    @app.cli.command()  # 注册为命令，可以传入 name 参数来自定义命令
+    @click.option('--drop', is_flag=True, help='Create after drop.')  # 设置选项
+    def initdb(drop):
+        """Initialize the database."""
+        if drop:  # 判断是否输入了选项
+            db.drop_all()
+        db.create_all()
+        click.echo('Initialized database.')  # 输出提示信息
+
 
     @app.route('/upload-image', methods=['POST'])
     def upload_image():
@@ -113,6 +158,17 @@ def create_app():
     def chat_reset():
         with app.app_context():
             return current_app.chat.reset()
+        
+    # 登录
+    @app.route('/USys/login', methods=['GET'])
+    def login():
+        # 获取表单数据
+        account = request.args.get('account')  # 传入表单对应输入字段的 name 值
+        password = request.args.get('password')  # 传入表单对应输入字段的 password 值
+
+        user = User.query.filter_by(account=account, password=password).first()
+        normal_response = jsonify({'id': user.id, 'username': user.username})
+        return make_response(normal_response, 200)
     
     return app
 

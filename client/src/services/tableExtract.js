@@ -10,7 +10,6 @@ function extractTable(bbox, setFormValue, pageId) {
         }
     })
     .then(function(response) {
-        console.log(response.data)
         setFormValue(response.data)
     })
     .catch(function(error) {

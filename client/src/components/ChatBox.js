@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef }  from 'react';
 import { List, Avatar, Input, Button, Space } from 'antd';
 import { SendOutlined, DeleteOutlined } from '@ant-design/icons';
+import { resetChat } from '../services/reset';
 
 const ChatBox = () => {
 
@@ -68,19 +69,7 @@ const ChatBox = () => {
   const handleReset = () => {
     console.log('Resetting messages');
     setMessages([]);
-    fetch('http://localhost:5000/chat-reset', {
-      method: 'POST',
-    })
-      .then((response) => {
-        if (response.ok) {
-          console.log('Reset request sent: Success');
-        } else {
-          console.log('Reset request sent: Error');
-        }
-      })
-      .catch((error) => {
-        console.error('Error resetting messages:', error);
-      });
+    resetChat();
   };
 
   const handleSend = () => {

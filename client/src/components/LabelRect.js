@@ -5,7 +5,7 @@ import { Button, Modal } from 'antd';
 import LabelRectDropdown from "./LabelRectDropdown";
 import calcImagePos from "../utils/calcImagePos";
 
-const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callRectView }) => {
+const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView }) => {
   const groupRef = useRef();
   const labelRef = useRef();
   const rectRef = useRef();
@@ -116,7 +116,7 @@ const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callR
   const handleEditType = (e) => {
       setShowMenu(false);
       // 处理“修改类型”选项
-      setLabel('text');
+      setLabel('table');
       // call update
       callRectView('update', {label: 'text'});
   };
@@ -127,19 +127,20 @@ const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callR
       const del = groupRef.current;
 
       // 完全销毁
-      // const delTr = trRef.current;
-      // del.destroy();
-      // delTr.destroy();
+      const delTr = trRef.current;
+      del.destroy();
+      delTr.destroy();
       
       // 隐藏，以便重新恢复
-      del.visible(false)
-      callRectView('delete', {})
+      // del.visible(false)
 
+      callRectView('delete', {})
   };
 
   return (
     <React.Fragment>
       <Group
+        id={id}
         x={x}
         y={y}
         ref={groupRef}
@@ -174,7 +175,7 @@ const LabelRect = ({ x, y, width, height, initLabel, isSelected, onSelect, callR
           />
         </Label>
       </Group>
-      {(isSelected && groupRef.current.visible()) && (
+      {(isSelected) && (
         <Transformer
           ref={trRef}
           rotateEnabled={false}

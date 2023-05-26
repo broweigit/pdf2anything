@@ -8,7 +8,8 @@ function drawRectLayer(rectData, setRectLayer, setSelectedId, currImg) {
   const imgWidth = currImg.width;
   const imgHeight = currImg.height;
 
-  const rects = rectData.map((obj, index) => {
+  const rects = rectData.map((obj) => {
+    let id = obj.id;
     let x = obj.bbox[0];
     let y = obj.bbox[1];
     let width = obj.bbox[2] - obj.bbox[0];
@@ -34,18 +35,18 @@ function drawRectLayer(rectData, setRectLayer, setSelectedId, currImg) {
       height = imgHeight - y;
     }
     return {
-      id: `rect${index + 1}`,
+      id: id,
       x,
       y,
       width,
       height,
       label: obj.type,
       onSelect: function() {
-        setSelectedId(`rect${index + 1}`);
+        setSelectedId(id);
       }
     };
   });
-  setRectLayer(rects)
+  setRectLayer(rects);
 }
 
 export default drawRectLayer;

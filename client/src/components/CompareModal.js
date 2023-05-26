@@ -40,7 +40,7 @@ function MyModal({isModalOpen, setIsModalOpen, formValue, setFormValue, onConfir
       <textarea
         value={formValue}
         onChange={(e) => setFormValue(e.target.value)}
-        style={{ minWidth: '200px', minHeight: '200px' }}
+        style={{ width: '90%', height: '90%', fontSize: 'larger' }}
       />
     );
   };
@@ -48,13 +48,13 @@ function MyModal({isModalOpen, setIsModalOpen, formValue, setFormValue, onConfir
 
   return (
     
-    <Modal title="识别结果" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ display: 'flex' }}>
+    <Modal title="识别结果" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ flex: '1', width: '30vw', overflow: 'auto' }}>
+        <div style={{ flex: '1', width: '30vw', height: '50vh', overflow: 'auto' }}>
           {cropCanvas ? <img src={cropCanvas.toDataURL()} alt="Cropped" style={{ width: '100%' }} /> : null}
         </div>
         <RightOutlined style={{ margin: '0 10px', fontSize: '30px'}} />
-        <div style={{ flex: '1', width: '30vw', overflow: 'auto' }}>
+        <div style={{ flex: '1', width: '30vw', height: '50vh', overflow: 'auto' }}>
           {renderFormContent()}
         </div>
       </div>
