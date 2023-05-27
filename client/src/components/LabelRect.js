@@ -5,7 +5,7 @@ import { Button, Modal } from 'antd';
 import LabelRectDropdown from "./LabelRectDropdown";
 import calcImagePos from "../utils/calcImagePos";
 
-const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView }) => {
+const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils }) => {
   const groupRef = useRef();
   const labelRef = useRef();
   const rectRef = useRef();
@@ -115,10 +115,14 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
 
   const handleEditType = (e) => {
       setShowMenu(false);
-      // 处理“修改类型”选项
-      setLabel('table');
-      // call update
-      callRectView('update', {label: 'text'});
+      // 通过输入Modal来获取用户输入
+      modalUtils.setModalVisible(true);
+      modalUtils.callbackRef.current = (inputValue) => {
+        // 处理“修改类型”选项
+        setLabel(inputValue);
+        // call update
+        callRectView('update', {label: inputValue});
+      }
   };
 
   const handleRemove = (e) => {
@@ -205,7 +209,8 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
             x={menuPosition.x} y={menuPosition.y} width={150} height={40}
             handleIdentify={handleIdentify}
             handleEditType={handleEditType}
-            handleRemove={handleRemove}/>
+            handleRemove={handleRemove}
+          />
       )}
     </React.Fragment>
   );

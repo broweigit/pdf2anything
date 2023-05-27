@@ -61,7 +61,7 @@ function App() {
       setRectLayer([]);
     }
   }, [rectData]);
-  // 拷贝rectLayer至RectView
+  // 赋值rectLayer触发拷贝至RectView
   useEffect(() => {
     if (!isRepaintRef.current) {
       setRectView(prevRectView => {
@@ -73,14 +73,14 @@ function App() {
     isRepaintRef.current = false;
   }, [rectLayer]);
   // 只允许用setRectData，rectView！！(将额外数据加入rectView或挂载操纵函数时需要用到setRectView)
-  
-  // 换页时，需将rectView中的矩形框相关内容放入rectData中，以重新绘制
-  useEffect(() => {
+
+  const setRectDataFromRectView = () => {
+    console.log(rectView)
     setSelectedId(null);
     if (selPageId in rectView) {
       isRepaintRef.current = true;
       if (imgList) {
-        // Repaint to solve Delete Bug, but don't know why...
+        // Repaint Cleanup Layer to solve Delete Bug, but don't know why...
         drawRectLayer([], setRectLayer, setSelectedId, imgList[selPageId]);
       }
       setRectData(
@@ -98,8 +98,49 @@ function App() {
     else {
       setRectData([]);
     }
-
+  }
+  
+  // 换页时，需将rectView中的矩形框相关内容放入rectData中，以重新绘制
+  useEffect(() => {
+    setRectDataFromRectView();
   }, [selPageId]);
+
+  // 保存和读取
+  // 导出为 JSON 文件
+  function exportDataToJSON() {
+    // 要保存的变量
+    const data = {
+      rectView,
+      ocrLang,
+    };
+
+    const jsonData = JSON.stringify(data, null, 2);
+    return jsonData;
+  }
+
+  function downloadJSON(jsonData) {
+    // 提供下载：
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'data.json';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+  // 从 JSON 文件导入数据
+  function importDataFromJSON(jsonData) {
+    
+    const data = JSON.parse(jsonData);
+
+    setRectView(data.rectView);
+    setOcrLang(data.ocrLang);
+  }
+
+
 
   // 以下为登录相关
   // 退出登录清空用户数据
@@ -108,6 +149,7 @@ function App() {
       setUserInfo(null);
     }
   }, [isLogin]);
+
 
   // 以下为界面渲染相关
   // 当前Stage模式：['doc', 'plot']
@@ -118,7 +160,7 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   
   // 页面初始化时，需清理后端imgs，与前端保持一致
-  // 同时，需要检查后端是否在线
+  // 同时，需要检查后端是否在线 TODO
   useEffect(() => {
     resetUpload();
   }, []);
@@ -170,9 +212,14 @@ function App() {
       key: 'side1', 
       label: '版式分析',
       children: [
-        { key: '1', label: '开始分析', 
+        { key: 'side1-1', label: '单页分析', 
           onClick: () => {
             getLayout(setRectData, selPageId);
+          } 
+        },
+        { key: 'side1-2', label: '全部分析', 
+          onClick: () => {
+            alert();
           } 
         }
       ], 
@@ -181,10 +228,10 @@ function App() {
       key: 'side2', 
       label: '信息提取', 
       children: [
-        { key: '2', label: '全部提取' },
-        { key: '3', label: '文字提取' },
-        { key: '4', label: '表格提取' },
-        { key: '5', label: '图表数据提取' }
+        { key: 'side2-2', label: '全部提取' },
+        { key: 'side2-3', label: '文字提取' },
+        { key: 'side2-4', label: '表格提取' },
+        { key: 'side2-5', label: '图表数据提取' }
       ],
     },
     { 
@@ -200,7 +247,7 @@ function App() {
       label: '设置',
       
       children: [
-        { key: '6', 
+        { key: 'side4-6', 
           label: (
             <div>
               识别语言:{' '}
@@ -215,18 +262,27 @@ function App() {
             }
           } 
         }, 
-        { key: '7', label: '变更主题', onClick:  () => {handleThemeAlgChange(themeState, setThemeState);} }
+        { key: 'side4-7', label: '变更主题', onClick:  () => {handleThemeAlgChange(themeState, setThemeState);} }
       ],
     },
     { 
       key: 'side5', 
-      label: 'DEBUG',
+      label: 'DEBUG1',
       onClick: () => {
-        console.log(rectView)
-        console.log(isRepaintRef.current)
+        // console.log(rectView)
+        setDebugTempVar(exportDataToJSON());
+      } 
+    },
+    { 
+      key: 'side6', 
+      label: 'DEBUG2',
+      onClick: () => {
+        importDataFromJSON(debugTempVar);
       } 
     }
   ];
+
+  const [debugTempVar, setDebugTempVar] = useState('');
   
   const items1 = [
   

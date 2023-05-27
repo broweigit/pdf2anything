@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 function userLogin(values, setUserInfo, setIsLogin) {
-  axios.get('http://127.0.0.1:5000/USys/login', { 
+  axios.get('http://127.0.0.1:5000/user/login', { 
         params: {
             account: values.account,
             password: values.password
@@ -10,7 +10,7 @@ function userLogin(values, setUserInfo, setIsLogin) {
     .then(function(response) {
         console.log(response.data);
         const responseUser = response.data;
-        setUserInfo({ id: responseUser.id, name: responseUser.username, account: values.account });
+        setUserInfo({ id: responseUser.id, name: responseUser.username, account: responseUser.account });
         setIsLogin(true);
     })
     .catch(function(error) {

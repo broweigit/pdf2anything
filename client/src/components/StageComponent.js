@@ -1,7 +1,7 @@
-import { React, useEffect, useState } from 'react';
+import { React, useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Text, Group, Rect, Image } from 'react-konva';
-import { Layout, theme, FloatButton } from 'antd';
-import { RightOutlined, LeftOutlined, FileOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Layout, theme, FloatButton, Modal, Form, Input } from 'antd';
+import { RightOutlined, LeftOutlined, FileOutlined, PlayCircleOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
 import LabelRect from './LabelRect';
 import MyModal from './CompareModal';
@@ -247,6 +247,31 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
     resetUpload();
   };
 
+  const handleSave = () => {
+    alert()
+  };
+
+  // 一个Modal，用于给所有Konva提供输入Form
+  // 传参: setModalVisible，inputValue和setCallback
+  const [modalVisible, setModalVisible] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const callbackRef = useRef(null);
+
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+  const handleModalConfirm = () => {
+    if (callbackRef.current) {
+      callbackRef.current(inputValue); // 通过 callbackRef 调用最新的回调函数
+    }
+    setModalVisible(false);
+  };
+
+  const handleModalCancel = () => {
+    setModalVisible(false);
+  };
+
   // 主题颜色
   const {
     token: { colorPrimaryBgHover, colorTextHeading, colorPrimary },
@@ -312,11 +337,25 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                     isSelected={selectedId === rect.id}
                     onSelect={rect.onSelect}
                     callRectView={(caller, newProps) => callRectView(rect.id, caller, newProps)}
+                    modalUtils={{setModalVisible, callbackRef}}
                   />
                 ))}
 
                 </Layer>
             </Stage>
+
+            <Modal
+              title="输入"
+              open={modalVisible}
+              onOk={handleModalConfirm}
+              onCancel={handleModalCancel}
+            >
+              <Form>
+                <Form.Item label="类型">
+                  <Input value={inputValue} onChange={handleInputChange} />
+                </Form.Item>
+              </Form>
+            </Modal>
             
             <input
               id="fileInput"
@@ -334,6 +373,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                   onClick={handlePrevImage}
                   style={{
                     right: 150 + floatButtonOffset,
+                    border: `2px solid ${colorPrimary}`
                   }}
                 />
                 <FloatButton
@@ -341,6 +381,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                   shape="square"
                   style={{
                     right: 100 + floatButtonOffset,
+                    border: `2px solid ${colorPrimary}`
                   }}
                 />
                 <FloatButton
@@ -349,6 +390,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                   onClick={handleNextImage}
                   style={{
                     right: 50 + floatButtonOffset,
+                    border: `2px solid ${colorPrimary}`
                   }}
                 />
               </>
@@ -377,6 +419,11 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                     icon={<DeleteOutlined />}
                     tooltip={<div>Clear all pages</div>}
                     onClick={handleDelete}
+                  />
+                  <FloatButton
+                    icon={<SaveOutlined />}
+                    tooltip={<div>Save Project</div>}
+                    onClick={handleSave}
                   />
                 </>
               )}

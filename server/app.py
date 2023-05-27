@@ -14,6 +14,7 @@ import click
 
 import sys
 import os
+import random
 
 # from ruler import calculate_line_length
 
@@ -160,14 +161,40 @@ def create_app():
             return current_app.chat.reset()
         
     # 登录
-    @app.route('/USys/login', methods=['GET'])
+    @app.route('/user/login', methods=['GET'])
     def login():
         # 获取表单数据
         account = request.args.get('account')  # 传入表单对应输入字段的 name 值
         password = request.args.get('password')  # 传入表单对应输入字段的 password 值
 
         user = User.query.filter_by(account=account, password=password).first()
-        normal_response = jsonify({'id': user.id, 'username': user.username})
+        if user is None:
+            # 尝试以用户名登录
+            user = User.query.filter_by(username=account, password=password).first()
+            if user is None: 
+                return make_response('Login Failed', 400)
+        normal_response = jsonify({'id': user.id, 'username': user.username, 'account': user.account})
+        return make_response(normal_response, 200)
+
+    # 注册
+    @app.route('/user/register', methods=['GET'])
+    def register():
+        # 获取表单数据
+        username = request.args.get('username')  # 传入表单对应输入字段的 name 值
+        password = request.args.get('password')  # 传入表单对应输入字段的 password 值
+
+        print(username, password)
+
+        # 生成账号
+        num = 0
+        while True:
+            num = random.randint(100000000, 999999999)  # 闭区间
+            if User.query.filter_by(account=str(num)).first() is None:
+                break
+        user = User(username=username, account=str(num), password=password)  # 创建记录
+        db.session.add(user)  # 添加到数据库会话
+        db.session.commit()  # 提交数据库会话
+        normal_response = jsonify({'account': str(num)})
         return make_response(normal_response, 200)
     
     return app
