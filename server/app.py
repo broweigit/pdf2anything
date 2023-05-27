@@ -1,11 +1,11 @@
-from flask import Flask, request, current_app, jsonify, make_response
+from flask import Flask, request, current_app, jsonify, make_response, session, send_from_directory
 from flask_cors import CORS
-
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 
 from ocr import OCRSystem
 from chat import ChatSystem
-from fileman import FileManSystem
+from fileman import FileManSystem, make_base64_png, convert_image_to_binary, convert_pdf_to_binary, restore_binary_to_image, restore_binary_to_pdf
 
 import cv2
 import numpy as np
@@ -28,13 +28,19 @@ def create_app():
 
     app = Flask(__name__)
     app.config['SECRET_KEY'] = '12010524'
+    app.config['SESSION_TYPE'] = 'filesystem'  # 设置 session 存储方式为文件系统(也可以利用sqlalchemy)
+    app.config['SESSION_PERMANENT'] = True  # 设置会话为永久性
+    app.config['SESSION_USE_SIGNER'] = False  # 是否对发送到浏览器上session的cookie值进行加密
+    app.config['SESSION_KEY_PREFIX'] = 'session:'  # 保存到session中的值的前缀
     app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(app.root_path, 'data.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
     db = SQLAlchemy(app)
-    CORS(app)
+    Session(app)
+    CORS(app, supports_credentials=True)
+
+    ocr = OCRSystem()
     
     with app.app_context():
-        current_app.ocr = OCRSystem()
         current_app.chat = ChatSystem()
         current_app.fm = FileManSystem()
 
@@ -45,17 +51,24 @@ def create_app():
         account = db.Column(db.String(9))  # 账号 固定9位
         password = db.Column(db.String(30))  # 密码
 
-    class Project(db.Model):  # 表名将会是 project
-        id = db.Column(db.Integer, primary_key=True)  # 主键 id
-        name = db.Column(db.String(20))  # 项目的名称
-        user_id = db.Column(db.Integer)  # 所属用户的id
+    class Project(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        userId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+        name = db.Column(db.String(100), nullable=False)
+        jsonData = db.Column(db.Text, nullable=False)
+        projectDate = db.Column(db.String(20), nullable=False)
+        file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
 
+        # Define the relationship with User model(one to many)
+        user = db.relationship('User', backref=db.backref('projects', lazy=True))
 
-    class File(db.Model):  # 表名将会是 model
-        id = db.Column(db.Integer, primary_key=True)  # 主键 id
-        type = db.Column(db.String(20))  # 文件的类型，根据文件的类型可以把文件转成长文本或者把长文本转成文件，文件的类型可以是文件夹
-        name = db.Column(db.String(20))  # 文件的名字
-        content = db.Column(db.Text)  # 文件的内容
+        # Define the relationship with File model(one to one)
+        file = db.relationship('File', backref=db.backref('project', lazy=True))
+
+    class File(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        pdfData = db.Column(db.BLOB)
+        imgListData = db.Column(db.PickleType)
 
     @app.cli.command()  # 注册为命令，可以传入 name 参数来自定义命令
     @click.option('--drop', is_flag=True, help='Create after drop.')  # 设置选项
@@ -66,6 +79,12 @@ def create_app():
         db.create_all()
         click.echo('Initialized database.')  # 输出提示信息
 
+
+
+    @app.route('/')
+    def index():
+        return send_from_directory('static', 'index.html')
+        
 
     @app.route('/upload-image', methods=['POST'])
     def upload_image():
@@ -92,7 +111,7 @@ def create_app():
     def get_layout_analysis():
         with app.app_context():
             page_id = request.args.get('pageId') 
-            layout_result = current_app.ocr.layout_analysis(current_app.fm.img_list[int(page_id)])
+            layout_result = ocr.layout_analysis(current_app.fm.img_list[int(page_id)])
 
             return jsonify(layout_result)
     
@@ -108,7 +127,7 @@ def create_app():
 
             # cv2.imwrite('./roi.jpg', img_roi)
 
-            table_result = current_app.ocr.table_analysis(img_roi)
+            table_result = ocr.table_analysis(img_roi)
             # print(table_result[0]['res']['html'])
             response = make_response(table_result[0]['res']['html'])
             response.headers['Content-Type'] = 'text/html'
@@ -127,7 +146,7 @@ def create_app():
 
             # cv2.imwrite('./roi.jpg', img_roi)
 
-            text_result = current_app.ocr.text_analysis(img_roi, lang)
+            text_result = ocr.text_analysis(img_roi, lang)
             return text_result
     
     @app.route('/convert-image', methods=['POST'])
@@ -173,7 +192,10 @@ def create_app():
             user = User.query.filter_by(username=account, password=password).first()
             if user is None: 
                 return make_response('Login Failed', 400)
-        normal_response = jsonify({'id': user.id, 'username': user.username, 'account': user.account})
+            
+        # session['user_id'] = user.id
+
+        normal_response = jsonify({'userId': user.id, 'username': user.username, 'account': user.account})
         return make_response(normal_response, 200)
 
     # 注册
@@ -197,6 +219,115 @@ def create_app():
         normal_response = jsonify({'account': str(num)})
         return make_response(normal_response, 200)
     
+    # 退出登录
+    @app.route('/user/logout', methods=['GET'])
+    def logout():
+        # print(session.get('user_id'), session.sid)
+        # session.pop('user_id', None)
+        return make_response('已退出登录', 200)
+    
+    @app.route('/save-project', methods=['POST'])
+    def save_project():
+        # if 'user_id' not in session or session['user_id'] is None:
+        #     return make_response('User not logged in', 401)
+        
+        project_name = request.form.get('projectName')  # 获取表单字段 projectName 的值
+        json_data = request.form.get('jsonData')  # 获取表单字段 jsonData 的值
+        project_date = request.form.get('projectDate')  # 获取表单字段 projectDate 的值
+
+        pdf_file = current_app.fm.pdf_file
+        img_list = current_app.fm.img_list
+
+        # user_id = session['user_id']
+        user_id = request.form.get('userId')
+
+        # 保存 pdf_file和img_list 到 File 表
+        pdf_file_data = convert_pdf_to_binary(pdf_file)
+        img_list_data = [convert_image_to_binary(image) for image in img_list]
+        file = File(pdfData=pdf_file_data, imgListData=img_list_data)
+        db.session.add(file)
+        db.session.commit()
+
+        # 获取文件 ID
+        file_id = file.id
+
+        # 创建 Project 记录并关联文件
+        project = Project(userId=user_id, name=project_name, jsonData=json_data, projectDate=project_date, file_id=file_id)
+        db.session.add(project)
+        db.session.commit()
+
+        # 构造返回结果
+        response_data = {
+            'saved': True
+        }
+        response = jsonify(response_data)
+        return make_response(response, 200)
+    
+    @app.route('/get-project-list', methods=['GET'])
+    def get_project_list():
+        user_id = request.args.get('userId')  # 获取用户ID参数
+
+        # 查询特定用户的所有项目
+        projects = Project.query.filter_by(userId=user_id).all()
+
+        # 构造返回的项目列表
+        project_list = []
+        for project in projects:
+            project_data = {
+                'pid': project.id,
+                'name': project.name,
+                'projectDate': project.projectDate
+            }
+            project_list.append(project_data)
+
+        return jsonify(project_list)
+    
+    @app.route('/load-project', methods=['GET'])
+    def load_project():
+        project_id = request.args.get('pid')  # 获取表单字段 projectId 的值
+
+        # 查询项目记录
+        project = Project.query.get(project_id)
+
+        if not project:
+            return make_response('Project not found', 404)
+
+        # 查询关联的文件记录
+        file = File.query.get(project.file_id)
+
+        if not file:
+            return make_response('File not found', 404)
+
+        # 将文件数据转换为相应格式
+        pdf = restore_binary_to_pdf(file.pdfData)
+        img_list = [restore_binary_to_image(image_data) for image_data in file.imgListData]
+        # 保存到filemanager中
+        current_app.fm.pdf_file = pdf
+        current_app.fm.img_list = img_list
+
+        # 构造返回结果
+        response_data = {
+            'jsonData': project.jsonData,
+            'imgList': make_base64_png(img_list)
+        }
+        response = jsonify(response_data)
+        return make_response(response, 200)
+    
+    @app.route('/delete-project', methods=['GET'])
+    def delete_project():
+        project_id = request.args.get('pid')  # 获取表单字段 projectId 的值
+
+        project = Project.query.get(project_id)
+
+        if project:
+            # 删除项目记录
+            db.session.delete(project)
+            db.session.commit()
+            return make_response('删除成功', 200)
+        else:
+            return make_response('项目不存在', 404)
+
+
     return app
 
 if __name__ == '__main__':

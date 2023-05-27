@@ -1,2 +1,4 @@
 __pycache__/
 key.ini
+flask_session/
+data.db

@@ -3,6 +3,7 @@ import base64
 import numpy as np
 import fitz
 import tempfile
+import pickle
 
 wdFormatPDF = 17 #转换的类型
 zoom_x=2 #尺寸大小，越大图片越清晰
@@ -20,6 +21,26 @@ def make_base64_png(cv_image_list):
         base64_data_str_list.append(base64_data_str)
 
     return base64_data_str_list
+
+def convert_image_to_binary(image):
+    # 将图像转换为二进制数据
+    image_data = pickle.dumps(image)
+    return image_data
+
+def convert_pdf_to_binary(pdf):
+    return pdf.tobytes()
+
+def restore_binary_to_image(image_data):
+    # 将二进制数据恢复为图像对象
+    image = pickle.loads(image_data)
+    return image
+
+def restore_binary_to_pdf(pdf_data):
+    # 将二进制数据恢复为 PDF 对象
+    pdf = fitz.open(stream=pdf_data, filetype='pdf')
+    return pdf
+
+
 
 class FileManSystem():
     def __init__(self):

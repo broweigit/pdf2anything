@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
 import { Route, Routes, useNavigate  } from 'react-router-dom';
-import { Layout, theme, ConfigProvider, Modal } from 'antd';
+import { Layout, theme, ConfigProvider, Modal, Form, Input, Button } from 'antd';
+import moment from 'moment';
 
 import SidebarComponent from './components/SidebarComponent';
 import HeaderComponent from './components/HeaderComponent';
@@ -20,6 +21,7 @@ import LoginModal from './components/LoginModal';
 
 import './live2d.css'
 import { resetUpload } from './services/reset';
+import saveProject from './services/saveProject';
 
 
 
@@ -117,20 +119,7 @@ function App() {
     const jsonData = JSON.stringify(data, null, 2);
     return jsonData;
   }
-
-  function downloadJSON(jsonData) {
-    // 提供下载：
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'data.json';
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }
-
+  
   // 从 JSON 文件导入数据
   function importDataFromJSON(jsonData) {
     
@@ -139,6 +128,68 @@ function App() {
     setRectView(data.rectView);
     setOcrLang(data.ocrLang);
   }
+
+  // 请求后端保存项目（让用户输入项目名称，发送参数为jsonData，项目名称，项目日期）
+  function saveProjectToBackend(projectName) {
+    const jsonData = exportDataToJSON(); // 获取LabelRects jsonData
+    
+    const projectDate = moment().format('YYYY-MM-DD HH:mm'); // 获取当前系统时间并转换为指定格式
+    console.log(projectName);
+    console.log(projectDate);
+
+    saveProject(projectName, jsonData, projectDate, userInfo);
+
+  }
+  // 让用户输入项目相关信息的Modal
+  const [modalVisible, setModalVisible] = useState(false);
+
+  function handleModalCancel() {
+    // 关闭 Modal
+    setModalVisible(false);
+  }
+  // 处理提交表单
+  const handleFormSubmit = (values) => {
+    setModalVisible(false);
+    const projectName = values.projectName;
+    // 调用保存项目的函数
+    saveProjectToBackend(projectName);
+  };
+  // 唤起保存项目 Modal
+  const handleOpenSaveModal = () => {
+    if (!userInfo) {
+      setShowLogin(true); // 要求用户先登录
+    }
+    else {
+      setModalVisible(true);
+    }
+  };
+
+  // 根据id从后端获取项目相关数据并恢复（jsonData，imgList）
+  function loadProjectFromBackend(jsonData, image_list) {
+    importDataFromJSON(jsonData);
+    setImgList(image_list);
+  }
+
+  useEffect(() => {
+    if (imgList && refreshStagePosFunc.current) {
+      setRectDataFromRectView();
+      refreshStagePosFunc.current(imgList[selPageId]);
+    }
+  }, [imgList])
+
+  // 给用户提供 JSON 文件下载（TODO 应该放在utils里）
+  // function downloadJSON(jsonData) {
+  //   const blob = new Blob([jsonData], { type: 'application/json' });
+  //   const url = URL.createObjectURL(blob);
+
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.download = 'data.json';
+  //   link.click();
+
+  //   URL.revokeObjectURL(url);
+  // }
+
 
 
 
@@ -158,6 +209,9 @@ function App() {
   const [showChat, setShowChat] = useState(false);
   // 显示Login弹窗
   const [showLogin, setShowLogin] = useState(false);
+
+  // 从Stage中获取refreshStagePos函数，用于主动刷新页面
+  const refreshStagePosFunc = useRef((image) => {alert("Not Implemented refreshStagePosFunc!")});
   
   // 页面初始化时，需清理后端imgs，与前端保持一致
   // 同时，需要检查后端是否在线 TODO
@@ -361,7 +415,14 @@ function App() {
             userInfo={userInfo}
           />
             <Routes>
-              <Route path="/user-space" element={<UserInterface/>}/>
+              <Route path="/user-space" element={
+                  <UserInterface
+                    userInfo={userInfo}
+                    setShowLogin={setShowLogin}
+                    loadProjectFromBackend={loadProjectFromBackend}
+                  />
+                }
+              />
               <Route path="/" element={
                 <>
                   <Layout>  
@@ -386,6 +447,8 @@ function App() {
                         setCurrStage={setCurrStage}
                         formValue={formValue}
                         setFormValue={setFormValue}
+                        handleOpenSaveModal={handleOpenSaveModal}
+                        refreshStagePosFunc={refreshStagePosFunc}
                       />
                     </Layout>
                     { showChat && (
@@ -398,6 +461,34 @@ function App() {
                         </div>
                       </Layout>
                     )}
+
+                    <Modal
+                      title="保存项目"
+                      open={modalVisible}
+                      onCancel={handleModalCancel}
+                      footer={null}
+                    >
+                      <Form onFinish={handleFormSubmit}>
+                        <Form.Item
+                          name="projectName"
+                          label="项目名称"
+                          rules={[
+                            {
+                              required: true,
+                              message: '请输入项目名称',
+                            },
+                          ]}
+                        >
+                          <Input />
+                        </Form.Item>
+
+                        <Form.Item>
+                          <Button type="primary" htmlType="submit">
+                            保存
+                          </Button>
+                        </Form.Item>
+                      </Form>
+                    </Modal>
                     
                     {currStage === 'plot' && (
                         <Modal 

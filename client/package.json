@@ -41,6 +41,7 @@
     "jimp": "^0.22.8",
     "konva": "^9.0.1",
     "mini-css-extract-plugin": "^2.4.5",
+    "moment": "^2.29.4",
     "postcss": "^8.4.4",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",

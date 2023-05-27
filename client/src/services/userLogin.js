@@ -10,7 +10,7 @@ function userLogin(values, setUserInfo, setIsLogin) {
     .then(function(response) {
         console.log(response.data);
         const responseUser = response.data;
-        setUserInfo({ id: responseUser.id, name: responseUser.username, account: responseUser.account });
+        setUserInfo({ userId: responseUser.userId, name: responseUser.username, account: responseUser.account });
         setIsLogin(true);
     })
     .catch(function(error) {

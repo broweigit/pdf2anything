@@ -18,7 +18,7 @@ const { Content } = Layout;
 
 const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRectView, 
   selectedId, setSelectedId, imgList, setImgList, selPageId, setSelPageId, cropCanvas, setCropCanvas, 
-  ocrLang, setCurrStage, formValue, setFormValue }) => {
+  ocrLang, setCurrStage, formValue, setFormValue, handleOpenSaveModal, refreshStagePosFunc }) => {
 
   const [stageRef, setStageRef] = useState(null);
   const [floatButtonOffset, setFloatButtonOffset] = useState(60);
@@ -65,23 +65,27 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
 
   // 经常要用的重新定位stage
   const refreshStagePos = (image) => {
-    const stage = stageRef.getStage();
-    const ratio = image.width / image.height;
-    let newScale, offX, offY;
-    if (stage.width() / stage.height() > ratio) {
-      // Stage 宽高比大于图片比例，按高度缩放
-      newScale = stage.height() / image.height;
-      offX = (stage.width() - stage.height() * ratio) / 2;
-      offY = 0;
-    } else {
-      // Stage 宽高比小于图片比例，按宽度缩放
-      newScale = stage.width() / image.width;
-      offX = 0;
-      offY = (stage.height() - stage.width() / ratio) / 2;
+    const stage = stageRef;
+    if (stage) {
+      const ratio = image.width / image.height;
+      let newScale, offX, offY;
+      if (stage.width() / stage.height() > ratio) {
+        // Stage 宽高比大于图片比例，按高度缩放
+        newScale = stage.height() / image.height;
+        offX = (stage.width() - stage.height() * ratio) / 2;
+        offY = 0;
+      } else {
+        // Stage 宽高比小于图片比例，按宽度缩放
+        newScale = stage.width() / image.width;
+        offX = 0;
+        offY = (stage.height() - stage.width() / ratio) / 2;
+      }
+      stage.scale({ x: newScale, y: newScale });
+      stage.position({x: offX, y: offY})
     }
-    stage.scale({ x: newScale, y: newScale });
-    stage.position({x: offX, y: offY})
   }
+
+  refreshStagePosFunc.current = refreshStagePos;
 
   useEffect(() => {
     if (imgList) {
@@ -245,10 +249,6 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
     stage.scale({ x: 1, y: 1 });
     stage.position({x: 0, y: 0})
     resetUpload();
-  };
-
-  const handleSave = () => {
-    alert()
   };
 
   // 一个Modal，用于给所有Konva提供输入Form
@@ -423,7 +423,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                   <FloatButton
                     icon={<SaveOutlined />}
                     tooltip={<div>Save Project</div>}
-                    onClick={handleSave}
+                    onClick={handleOpenSaveModal}
                   />
                 </>
               )}

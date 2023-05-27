@@ -4,6 +4,7 @@ import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 
 import '../css/icon.css'
 import { useNavigate } from 'react-router-dom';
+import userLogout from '../services/userLogout';
 
 const { Header } = Layout;
 
@@ -28,7 +29,7 @@ const HeaderComponent = ({ menuItems, setShowLogin, isLogin, setIsLogin, userInf
               style={{ marginLeft: '8px' }}
               onClick={(e) => {
                 e.stopPropagation();
-                setIsLogin(false)
+                userLogout(setIsLogin);
               }}
             />
           </div>
