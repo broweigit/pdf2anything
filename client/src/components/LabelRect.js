@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Rect, Group, Text, Tag, Label, Transformer } from "react-konva";
-import { Button, Modal } from 'antd';
+import { Rect, Group, Text, Tag, Label, Arrow, Transformer } from "react-konva";
 
 import LabelRectDropdown from "./LabelRectDropdown";
 import calcImagePos from "../utils/calcImagePos";
 
-const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils, antiScale, hasOCR }) => {
+const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils, antiScale, hasOCR, showChat }) => {
   const groupRef = useRef();
   const labelRef = useRef();
   const rectRef = useRef();
@@ -146,6 +145,9 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
   //   console.log(antiScale);
   // }, [antiScale])
 
+  // 箭头的hover动态效果
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <React.Fragment>
       <Group
@@ -187,6 +189,25 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
             fill={'white'}
           />
         </Label>
+        <Arrow
+          visible={showChat && hasOCR}
+          points={[ 
+            width / 2 / antiScale, 
+            height / 2 / antiScale, 
+            (width / 2 + 30)/ antiScale, 
+            height / 2/ antiScale]
+          } // 调整箭头的位置和长度
+          pointerLength={10}
+          pointerWidth={10}
+          fill={stroke}
+          stroke={stroke}
+          strokeWidth={12}
+          scale={{x: antiScale, y:antiScale}}
+          opacity={isHovered ? 1 : 0.6}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={() => {callRectView('chat')}}
+        />
       </Group>
       {(isSelected) && (
         <Transformer

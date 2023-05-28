@@ -47,6 +47,9 @@ function App() {
   // OCR识别结果表单的值，由于plot需要，故提升至App.js
   const [formValue, setFormValue] = useState(''); 
 
+  // 呼叫chatGPT的函数，由ChatBox定义，传递给LabelRect
+  const callChatFunc = useRef(null);
+
   // 以下代码的目的是区分数据输入和数据视图。防止 “绘制 >> 更新数据 >> 更新绘制” 的循环
   // 矩形框数据输入 >> 绘制 控制链，通过赋值rectData，触发drawRectLayer，重新构建RectLayer对象组，拷贝至RectView，最后重新渲染Stage
   // 绘制 >> 矩形框数据视图, 上面的步骤给每一个rect对象挂载update以反映变化，对应修改rectView。任何对当前LabelRect状态的读取只允许查看rectView
@@ -84,7 +87,7 @@ function App() {
     if (selPageId in rectView) {
       isRepaintRef.current = 2; // 由于Delete补丁的存在，所以需要隔断两次重绘
       if (imgList) {
-        // Repaint Cleanup Layer to solve Delete Bug, but caused render chain cut failed...
+        // Repaint Cleanup Layer to solve Delete Bug
         drawRectLayer([], setRectLayer, setSelectedId, imgList[selPageId]);
       }
       setRectData(
@@ -106,10 +109,26 @@ function App() {
     }
   }
   
+  // 以下为需要将View刷新到Data进行重绘的场景，该传递为单向，回到View的循环会被隔断
   // 换页时，需将rectView中的矩形框相关内容放入rectData中，以重新绘制
   useEffect(() => {
     setRectDataFromRectView();
   }, [selPageId]);
+  // 图片列表更改时
+  useEffect(() => {
+    if (imgList && refreshStagePosFunc.current) {
+      setRectDataFromRectView();
+      refreshStagePosFunc.current(imgList[selPageId]);
+    }
+  }, [imgList])
+  // 其余rectView更新且需要立即重绘的，需要在更新View前设置setRepaintReqOnViewUpdate,以确保该变化不是由Data设置引起的
+  const [repaintReqOnViewUpdate, setRepaintReqOnViewUpdate] = useState(false);
+  useEffect(() => {
+    if (repaintReqOnViewUpdate) {
+      setRectDataFromRectView();
+      setRepaintReqOnViewUpdate(false);
+    }
+  }, [rectView])
 
   // 保存和读取
   // 导出为 JSON 文件
@@ -173,13 +192,6 @@ function App() {
     importDataFromJSON(jsonData);
     setImgList(image_list);
   }
-
-  useEffect(() => {
-    if (imgList && refreshStagePosFunc.current) {
-      setRectDataFromRectView();
-      refreshStagePosFunc.current(imgList[selPageId]);
-    }
-  }, [imgList])
 
   // 给用户提供 JSON 文件下载（TODO 应该放在utils里）
   // function downloadJSON(jsonData) {
@@ -462,11 +474,14 @@ function App() {
                         setFormValue={setFormValue}
                         handleOpenSaveModal={handleOpenSaveModal}
                         refreshStagePosFunc={refreshStagePosFunc}
+                        callChatFunc={callChatFunc}
+                        showChat={showChat}
+                        setRepaintReqOnViewUpdate={setRepaintReqOnViewUpdate}
                       />
                     </Layout>
                     { showChat && (
                       <Layout>
-                        <ChatBox/>
+                        <ChatBox callChatFunc={callChatFunc} />
                         <div id="landlord">
                           <div className="message" style={{opacity: 0}}></div>
                           <canvas id="live2d" width="280" height="250" className="live2d"></canvas>

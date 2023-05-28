@@ -18,7 +18,9 @@ const { Content } = Layout;
 
 const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRectView, 
   selectedId, setSelectedId, imgList, setImgList, selPageId, setSelPageId, cropCanvas, setCropCanvas, 
-  ocrLang, setCurrStage, formValue, setFormValue, handleOpenSaveModal, refreshStagePosFunc }) => {
+  ocrLang, setCurrStage, formValue, setFormValue, handleOpenSaveModal, refreshStagePosFunc, callChatFunc, 
+  showChat, setRepaintReqOnViewUpdate
+}) => {
 
   const [stageRef, setStageRef] = useState(null);
   const [floatButtonOffset, setFloatButtonOffset] = useState(60);
@@ -135,7 +137,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
   const handleSubmit = () => {
     // 在这里处理表单提交的逻辑，包括更新RectView，以及绘制？？TODO
     console.log('表单提交成功', formValue);
-    
+    setRepaintReqOnViewUpdate(true);
     RectViewUpdate(selectedId, {result: formValue});
   };
 
@@ -190,7 +192,9 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
 
     // 与chatgpt互动
     else if (caller === 'chat') {
-      alert()
+      const rectTarget = rectView[selPageId].find(rect => rect.id === id);
+      console.log(rectTarget)
+      callChatFunc.current(rectTarget.result);
     }
 
     else {
@@ -353,6 +357,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                     modalUtils={{setModalVisible, callbackRef}}
                     antiScale={antiScale}
                     hasOCR={rect.hasOCR}
+                    showChat={showChat}
                   />
                 ))}
 

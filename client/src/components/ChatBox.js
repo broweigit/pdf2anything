@@ -3,7 +3,7 @@ import { List, Avatar, Input, Button, Space } from 'antd';
 import { SendOutlined, DeleteOutlined } from '@ant-design/icons';
 import { resetChat } from '../services/reset';
 
-const ChatBox = () => {
+const ChatBox = ({callChatFunc}) => {
 
   const [messages, setMessages] = useState([]); // 聊天消息数据
   const [answering, setAnswering] = useState(false); // 实时显示信息流
@@ -23,7 +23,6 @@ const ChatBox = () => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setAnswering(true);
   };
-
 
   const pushPrompt = (prompt) => {
     if (prompt === '') {
@@ -81,6 +80,13 @@ const ChatBox = () => {
       // TODO 清空输入框内容
     }
   };
+
+  callChatFunc.current = (message) => {
+    if (message) {
+      handleSendMessage(message);
+      pushPrompt(message);
+    }
+  }
 
   return (
     <div style={{ margin: '20px' }}>
