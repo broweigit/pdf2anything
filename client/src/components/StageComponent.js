@@ -42,6 +42,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
 
     for (const file of files) {
       const reader = new FileReader();
+      const prev_list_len = imgList? imgList.length : 0;
 
       reader.onload = (event) => {
         new Promise((resolve) => {
@@ -55,9 +56,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
           setImgList(image_list);
           const image = image_list[selPageId];
           refreshStagePos(image);
-          if (image_list.length - 1 > selPageId) {
-            setSelPageId(prevIndex => prevIndex + 1);
-          }
+          setSelPageId(prev_list_len);
         });
       }
       reader.readAsDataURL(file);
@@ -187,6 +186,11 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
       setIsModalOpen(true);
 
       // 更新RectView(延后到Modal Submit)
+    }
+
+    // 与chatgpt互动
+    else if (caller === 'chat') {
+      alert()
     }
 
     else {
@@ -348,6 +352,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                     callRectView={(caller, newProps) => callRectView(rect.id, caller, newProps)}
                     modalUtils={{setModalVisible, callbackRef}}
                     antiScale={antiScale}
+                    hasOCR={rect.hasOCR}
                   />
                 ))}
 

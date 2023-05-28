@@ -5,7 +5,7 @@ import { Button, Modal } from 'antd';
 import LabelRectDropdown from "./LabelRectDropdown";
 import calcImagePos from "../utils/calcImagePos";
 
-const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils, antiScale }) => {
+const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils, antiScale, hasOCR }) => {
   const groupRef = useRef();
   const labelRef = useRef();
   const rectRef = useRef();
@@ -80,7 +80,7 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
     const rect = rectRef.current;
     const stage = rect.getStage();
     const rectAbs = rect.getClientRect();
-    
+
     console.log({
       x: (rectAbs.x - stage.x()) / stage.scaleX(), 
       y: (rectAbs.y - stage.y()) / stage.scaleY(), 
@@ -164,9 +164,13 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
           width={width}
           height={height}
           ref={rectRef}
-          strokeWidth={strokeWidth}
+          strokeWidth={hasOCR ? strokeWidth * 2 : strokeWidth}
           stroke={stroke}
           fill={fill}
+          shadowEnabled={hasOCR}
+          shadowColor="yellow"
+          shadowBlur={40}
+          shadowOpacity={1}
         />
         <Label y={-18} opacity={0.65} ref={labelRef} scale={{x: antiScale, y: antiScale}}>
           <Tag

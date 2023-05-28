@@ -4,16 +4,21 @@ function drawRectLayer(rectData, setRectLayer, setSelectedId, currImg) {
   }
   // 给Text一些适当的Padding, 但是不能越界
   const TextType = ['title', 'text', 'reference'];
-  const padding = 5;
+  const padding = 3;
   const imgWidth = currImg.width;
   const imgHeight = currImg.height;
 
   const rects = rectData.map((obj) => {
-    let id = obj.id;
+    const id = obj.id;
     let x = obj.bbox[0];
     let y = obj.bbox[1];
     let width = obj.bbox[2] - obj.bbox[0];
     let height = obj.bbox[3] - obj.bbox[1];
+    // 没有hasOCR字段或hasOCR字段为false 结果均为false
+    let hasOCR = obj.hasOwnProperty('hasOCR');
+    if (hasOCR) {
+      hasOCR = obj.hasOCR;
+    }
     // 添加适当的 Padding
     if (TextType.includes(obj.type)) {
       x -= padding;
@@ -41,6 +46,7 @@ function drawRectLayer(rectData, setRectLayer, setSelectedId, currImg) {
       width,
       height,
       label: obj.type,
+      hasOCR: hasOCR,
       onSelect: function() {
         setSelectedId(id);
       }

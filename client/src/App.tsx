@@ -55,7 +55,7 @@ function App() {
   const [rectLayer, setRectLayer] = useState<{}[]>([]);
   const [rectView, setRectView] = useState<{ [pageId: number]: {}[] }>({}); // Mutipage更新
   // RePaint 代表该次RectData修改由换页触发而非版式分析，截断Layer>>View信号
-  const isRepaintRef = useRef(false);
+  const isRepaintRef = useRef(0);
   // 赋值rectData触发drawRectLayer
   useEffect(() => {
     if (imgList) {
@@ -67,14 +67,14 @@ function App() {
   }, [rectData]);
   // 赋值rectLayer触发拷贝至RectView
   useEffect(() => {
-    if (!isRepaintRef.current) {
+    if (isRepaintRef.current == 0) {
       setRectView(prevRectView => {
         const newView = { ...prevRectView };
         newView[selPageId] = rectLayer;
         return newView;
       });
     }
-    isRepaintRef.current = false;
+    else isRepaintRef.current -= 1; 
   }, [rectLayer]);
   // 只允许用setRectData，rectView！！(将额外数据加入rectView或挂载操纵函数时需要用到setRectView)
 
@@ -82,22 +82,24 @@ function App() {
     console.log(rectView)
     setSelectedId(null);
     if (selPageId in rectView) {
-      isRepaintRef.current = true;
+      isRepaintRef.current = 2; // 由于Delete补丁的存在，所以需要隔断两次重绘
       if (imgList) {
-        // Repaint Cleanup Layer to solve Delete Bug, but don't know why...
+        // Repaint Cleanup Layer to solve Delete Bug, but caused render chain cut failed...
         drawRectLayer([], setRectLayer, setSelectedId, imgList[selPageId]);
       }
       setRectData(
-        rectView[selPageId].map((view: any) => (
-          {
+        rectView[selPageId].map((view: any) => {
+          const hasOCR = view.hasOwnProperty('result');
+          return {
             id: view.id,
             bbox: [view.x, view.y, view.x + view.width, view.y + view.height],
             img_idx: 0,
             res: '',
             type: view.label,
-          }
-        ))
-      )
+            hasOCR: hasOCR
+          };
+        })
+      );
     }
     else {
       setRectData([]);
