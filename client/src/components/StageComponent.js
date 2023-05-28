@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Text, Group, Rect, Image } from 'react-konva';
-import { Layout, theme, FloatButton, Modal, Form, Input } from 'antd';
+import { Layout, theme, FloatButton, Modal, Form, Input, Drawer } from 'antd';
 import { RightOutlined, LeftOutlined, FileOutlined, PlayCircleOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
 import LabelRect from './LabelRect';
@@ -234,6 +234,48 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
     });
   }
 
+  const RectViewAdd = (id, type, bbox) => {
+    setRectView(prevState => {
+      const newView = { ...prevState };
+      if (newView[selPageId]) {
+        const existingRect = prevState[selPageId].find(rect => rect.id === id);
+        if (existingRect) {
+          // ID 已存在，执行相应的逻辑（如提示错误、忽略等）
+          alert(`Error: ID ${id} already exists in rectView!`);
+          return prevState; // 返回之前的状态，不做任何修改
+        } else {
+          newView[selPageId] = [...prevState[selPageId], { 
+            id, 
+            x: bbox[0], 
+            y: bbox[1],
+            width: bbox[2],
+            height: bbox[3],
+            label: type,
+            hasOCR: false 
+          }];
+        }
+      } else {
+        alert('Error, RectView caller encountered unexpected pageId!');
+      }
+      return newView;
+    });
+  };
+
+  // 以下为工具按钮事件(添加矩形框)
+  const handleToolClick = (label) => {
+    setRepaintReqOnViewUpdate(true);
+    let index = 0;
+    let id = `rect${selPageId}-${index}`;
+    while (rectView[selPageId].some(rect => rect.id === id)) {
+      index++;
+      id = `rect${selPageId}-${index}`;
+    }
+    const stage = stageRef;
+    const stagePos = stage.position();
+    console.log(stagePos);
+    RectViewAdd(id, label, [-stagePos.x, -stagePos.y, 200, 200]);
+  };
+
 
   // 以下为悬浮按钮事件处理
   const handleFileButtonClick = () => {
@@ -291,8 +333,24 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
 
   // 主题颜色
   const {
-    token: { colorPrimaryBgHover, colorTextHeading, colorPrimary },
+    token: { colorPrimaryBgHover, colorTextHeading, colorPrimary, colorFillAlter, colorBorderSecondary, borderRadiusLG },
   } = theme.useToken();
+
+  const containerStyle = {
+    position: 'relative',
+    overflow: 'hidden',
+    textAlign: 'center',
+    background: colorFillAlter,
+    borderRadius: borderRadiusLG,
+  };
+  
+  const cardToolData = [
+    { show: 'text', label: 'text', color: 'darkblue' },
+    { show: 'table', label: 'table', color: 'darkgreen' },
+    { show: 'title', label: 'title', color: 'blue' },
+    { show: 'ref', label: 'reference', color: 'green' },
+    { show: 'figure', label: 'figure', color: 'red' }
+  ];
 
   return (
     <Layout onDrop={handleDrop} onDragOver={handleDragOver}>
@@ -304,7 +362,9 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                 minHeight: 280,
                 background: colorPrimaryBgHover
             }}
+            
         >
+          <div style={containerStyle}>
             <Stage 
                 width={width} 
                 height={height} 
@@ -458,6 +518,41 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
               onCancel={handleClear}
               cropCanvas={cropCanvas}
             />
+            <Drawer
+              placement="bottom"
+              mask={false}
+              open={imgList}
+              height={55}
+              closable={false}
+              zIndex={'0'}
+              getContainer={false}
+            >
+              <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                {cardToolData.map((tool, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      width: '60px',
+                      height: '40px',
+                      marginRight: '16px',
+                      border: '4px solid',
+                      borderRadius: '5px',
+                      borderColor: tool.color,
+                      backgroundColor: 'transparent',
+                      fontFamily: 'Calibri',
+                      fontSize: '20px',
+                      color: tool.color,
+                      cursor: 'pointer', // 添加鼠标指针样式
+                    }}
+                    onClick={() => {handleToolClick(tool.label)}} // 添加点击事件处理函数
+                  >
+                    {tool.show}
+                  </button>
+                ))}
+              </div>
+
+            </Drawer>
+          </div>
         </Content>
     </Layout>
   );
