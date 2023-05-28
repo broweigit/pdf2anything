@@ -56,17 +56,17 @@ const convertFile = async (fileType) => {
       link.click();
     }
     if (fileType === 'doc') {
-      const encodedPdf = response.data.pdfData;
-      const decodedPdf = atob(encodedPdf);
+      const encodedDoc = response.data.docData;
+      const decodedDoc = atob(encodedDoc);
 
       // 将解码后的PDF数据转换为字节数组
-      const pdfData = new Uint8Array(decodedPdf.length);
-      for (let i = 0; i < decodedPdf.length; i++) {
-        pdfData[i] = decodedPdf.charCodeAt(i);
+      const docData = new Uint8Array(decodedDoc.length);
+      for (let i = 0; i < decodedDoc.length; i++) {
+        docData[i] = decodedDoc.charCodeAt(i);
       }
 
       // 创建Blob对象并下载文件
-      const blob = new Blob([pdfData], { type: 'application/docx' });
+      const blob = new Blob([docData], { type: 'application/docx' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'document.docx';

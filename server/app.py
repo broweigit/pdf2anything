@@ -352,11 +352,11 @@ def create_app():
             index = 0
             random_number = random.randint(10000000, 99999999)
             folder_name = './doc_recovery/'+ str(random_number)
-            master = folder_name + '/temp/' + '0' + './docx'
+            master = folder_name + '/temp' + '0' + '_ocr.docx'
             for img in current_app.fm.img_list:
                 ocr.recovery(img, folder_name, index)
                 if index > 0:
-                    sub = folder_name + '/temp/' + str(index) + './docx'
+                    sub = folder_name + '/temp' + str(index) + '_ocr.docx'
                     doc_master = Document(master)
                     doc_master.add_page_break()
                     cp = Composer(doc_master)

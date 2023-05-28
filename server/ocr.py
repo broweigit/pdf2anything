@@ -37,11 +37,11 @@ class OCRSystem():
                 text_str += tmp_str+" "
         return text_str
     
-    def recovery_img(self, img, random_path, index):
+    def recovery(self, img, random_path, index):
         recovery_result = self.recovery_engine(img)
         save_folder = random_path
         result = self.recovery_engine(img)
-        save_structure_res(result, save_folder, 'temp')
+        save_structure_res(result, save_folder, 'temp'+str(index))
 
         for line in result:
             line.pop('img')
