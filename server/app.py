@@ -1,4 +1,4 @@
-from flask import Flask, request, current_app, jsonify, make_response, session, send_from_directory
+from flask import Flask, request, current_app, jsonify, make_response, session, send_from_directory, send_file
 from flask_cors import CORS
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
@@ -15,6 +15,11 @@ import click
 import sys
 import os
 import random
+import io
+import shutil
+
+from docx import Document
+from docxcompose.composer import Composer
 
 # from ruler import calculate_line_length
 
@@ -321,7 +326,7 @@ def create_app():
 
         if project:
             # 删除项目记录
-            db.session.delete(project)
+            db.session.delete(project) 
             db.session.commit()
             return make_response('删除成功', 200)
         else:
@@ -333,9 +338,50 @@ def create_app():
 
         if file_type == 'png':
             return make_response(make_base64_png(current_app.fm.img_list), 200)
+        elif file_type == 'pdf':
+            # 先将img列表转换
+            current_app.fm.imgs2pdf()
+            pdf_data = current_app.fm.pdf_file.tobytes()
+
+            # 将PDF文件进行Base64编码
+            encoded_pdf = base64.b64encode(pdf_data).decode('utf-8')
+
+            # 返回Base64编码后的PDF数据给前端
+            return jsonify({'pdfData': encoded_pdf})
+        elif file_type == 'doc':
+            index = 0
+            random_number = random.randint(10000000, 99999999)
+            folder_name = './doc_recovery/'+ str(random_number)
+            master = folder_name + '/temp/' + '0' + './docx'
+            for img in current_app.fm.img_list:
+                ocr.recovery(img, folder_name, index)
+                if index > 0:
+                    sub = folder_name + '/temp/' + str(index) + './docx'
+                    doc_master = Document(master)
+                    doc_master.add_page_break()
+                    cp = Composer(doc_master)
+                    cp.append(Document(sub))
+                    doc_master.save(master)
+                index = index + 1
+
+            doc_master = Document(master)
+            # 创建一个字节流对象
+            output = io.BytesIO()
+            # 将doc_master保存到字节流中
+            doc_master.save(output)
+            # 将字节流转换为字节数据
+            doc_data = output.getvalue()
+            # 将doc文件进行Base64编码
+            encoded_doc = base64.b64encode(doc_data).decode('utf-8')
+
+            # 使用shutil.rmtree函数删除文件夹及其内容
+            shutil.rmtree(folder_name)
+
+            # 返回Base64编码后的doc数据给前端
+            return jsonify({'docData': encoded_doc})
+
         else:
             return make_response('不支持此格式转换', 404)
-
 
     return app
 

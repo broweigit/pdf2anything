@@ -218,6 +218,11 @@ function App() {
   // 页面初始化时，需清理后端imgs，与前端保持一致
   // 同时，需要检查后端是否在线 TODO
   useEffect(() => {
+    setRectView({});
+    setRectData([]);
+    setImgList(null);
+    setSelPageId(0);
+    setSelectedId(null);
     resetUpload();
   }, []);
 
@@ -521,7 +526,7 @@ function App() {
                       >
                         <FileConversionStage
                           width={stageWidth * 0.8}
-                          height={stageHeight * 0.8}
+                          height={stageHeight * 0.75}
                           setConvFileType = {setConvFileType}
                         />
                       </Modal>

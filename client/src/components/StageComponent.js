@@ -51,7 +51,10 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
         }).then((image_list) => {
           setImgList(image_list);
           const image = image_list[selPageId];
-          refreshStagePos(image)
+          refreshStagePos(image);
+          if (image_list.length - 1 > selPageId) {
+            setSelPageId(prevIndex => prevIndex + 1);
+          }
         });
       }
       reader.readAsDataURL(file);

@@ -1,4 +1,21 @@
 import axios from 'axios';
+import JSZip from 'jszip';
+
+const downloadImagesAsZip = (loadedImages) => {
+  const zip = new JSZip();
+
+  loadedImages.forEach((image, index) => {
+    const fileName = `image_${index}.png`;
+    zip.file(fileName, image.src, { base64: false });
+  });
+
+  zip.generateAsync({ type: 'blob' }).then((content) => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(content);
+    link.download = 'images.zip';
+    link.click();
+  });
+};
 
 const convertFile = async (fileType) => {
 
@@ -8,29 +25,52 @@ const convertFile = async (fileType) => {
       }
   })
   .then(function(response) {
-    alert(fileType);
     if (fileType === 'png') {
-      const images = response.data.map((pngImage) => {
-        return new Promise((resolve) => {
-          const img = new window.Image();
-          img.src = pngImage;
-          img.onload = () => {
-            resolve(img);
-          };
-        });
+      const zip = new JSZip();
+      const images = response.data.map((pngImage, index) => {
+        const fileName = `image_${index}.png`;
+        zip.file(fileName, pngImage.replace(/^data:image\/(png|jpg);base64,/, ""), { base64: true });
       });
-  
-      // 等待所有图片加载完成
-      Promise.all(images)
-      .then((loadedImages) => {
-          // 下载所有加载完成的图片
-          loadedImages.forEach((image, index) => {
-            const link = document.createElement('a');
-            link.href = image.src;
-            link.download = `image_${index}.png`;
-            link.click();
-          });
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = 'images.zip';
+        link.click();
       });
+    }
+    if (fileType === 'pdf') {
+      const encodedPdf = response.data.pdfData;
+      const decodedPdf = atob(encodedPdf);
+
+      // 将解码后的PDF数据转换为字节数组
+      const pdfData = new Uint8Array(decodedPdf.length);
+      for (let i = 0; i < decodedPdf.length; i++) {
+        pdfData[i] = decodedPdf.charCodeAt(i);
+      }
+
+      // 创建Blob对象并下载文件
+      const blob = new Blob([pdfData], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'document.pdf';
+      link.click();
+    }
+    if (fileType === 'doc') {
+      const encodedPdf = response.data.pdfData;
+      const decodedPdf = atob(encodedPdf);
+
+      // 将解码后的PDF数据转换为字节数组
+      const pdfData = new Uint8Array(decodedPdf.length);
+      for (let i = 0; i < decodedPdf.length; i++) {
+        pdfData[i] = decodedPdf.charCodeAt(i);
+      }
+
+      // 创建Blob对象并下载文件
+      const blob = new Blob([pdfData], { type: 'application/docx' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'document.docx';
+      link.click();
     }
   })
   .catch(function(error) {

@@ -1,4 +1,6 @@
-from paddleocr import PPStructure, PaddleOCR
+from paddleocr import PPStructure, PaddleOCR, save_structure_res
+from paddleocr.ppstructure.recovery.recovery_to_doc import sorted_layout_boxes, convert_info_docx
+import os
 
 class OCRSystem():
     def __init__(self):
@@ -6,7 +8,7 @@ class OCRSystem():
         self.table_engine = PPStructure(layout=False, show_log=True)
         self.text_engine_ch = PaddleOCR(use_angle_cls=True, lang="ch")
         self.text_engine_en = PaddleOCR(use_angle_cls=True, lang="en")
-        #self.recovery_engine = PPStructure(recovery=True)
+        self.recovery_engine = PPStructure(recovery=True, lang="en")
         # pass
 
     def layout_analysis(self, img):
@@ -34,3 +36,16 @@ class OCRSystem():
             elif lang == 'ch' or not tmp_str.endswith('-'):
                 text_str += tmp_str+" "
         return text_str
+    
+    def recovery_img(self, img, random_path, index):
+        recovery_result = self.recovery_engine(img)
+        save_folder = random_path
+        result = self.recovery_engine(img)
+        save_structure_res(result, save_folder, 'temp')
+
+        for line in result:
+            line.pop('img')
+
+        h, w, _ = img.shape
+        res = sorted_layout_boxes(result, w)
+        convert_info_docx(img, res, save_folder, 'temp'+str(index))

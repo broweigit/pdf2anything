@@ -39,6 +39,7 @@
     "jest-resolve": "^27.4.2",
     "jest-watch-typeahead": "^1.0.0",
     "jimp": "^0.22.8",
+    "jszip": "^3.10.1",
     "konva": "^9.0.1",
     "mini-css-extract-plugin": "^2.4.5",
     "moment": "^2.29.4",

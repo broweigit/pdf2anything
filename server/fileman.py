@@ -4,6 +4,8 @@ import numpy as np
 import fitz
 import tempfile
 import pickle
+import io
+from PIL import Image
 
 wdFormatPDF = 17 #转换的类型
 zoom_x=2 #尺寸大小，越大图片越清晰
@@ -89,8 +91,21 @@ class FileManSystem():
             # pdf.close()
 
     def imgs2pdf(self):
-        # https://blog.csdn.net/qq_42521874/article/details/115568175
-        pass
+        doc = fitz.open()
+        for index, image in enumerate(self.img_list):
+
+            is_success, buffer = cv2.imencode(".png", image)
+            io_buf = io.BytesIO(buffer)
+
+            # Convert PIL image to PDF page
+            pdf_bytes = fitz.Pixmap(io_buf)
+            page = doc.new_page(width=pdf_bytes.width, height=pdf_bytes.height)
+            page.insert_image(fitz.Rect(0, 0, pdf_bytes.width, pdf_bytes.height), pixmap=pdf_bytes)
+            
+
+        self.pdf_file = doc
+        # doc.save('output.pdf')
+        # doc.close()
 
     def reset(self):
         self.img_list = []

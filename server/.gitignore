@@ -2,3 +2,5 @@ __pycache__/
 key.ini
 flask_session/
 data.db
+doc_recovery/
+output.pdf
