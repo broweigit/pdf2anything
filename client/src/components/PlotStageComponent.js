@@ -1,7 +1,6 @@
 import { React, useState, useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Text } from 'react-konva';
 import { Layout, theme, Modal, Form, Input, FloatButton } from 'antd';
-import { CheckCircleOutlined } from '@ant-design/icons';
 
 import LabelDot from './LabelDot';
 import calcImagePos from '../utils/calcImagePos';

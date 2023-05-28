@@ -326,6 +326,15 @@ def create_app():
             return make_response('删除成功', 200)
         else:
             return make_response('项目不存在', 404)
+        
+    @app.route('/convert-file', methods=['GET'])
+    def convert_file():
+        file_type = request.args.get('fileType')
+
+        if file_type == 'png':
+            return make_response(make_base64_png(current_app.fm.img_list), 200)
+        else:
+            return make_response('不支持此格式转换', 404)
 
 
     return app

@@ -22,6 +22,8 @@ import LoginModal from './components/LoginModal';
 import './live2d.css'
 import { resetUpload } from './services/reset';
 import saveProject from './services/saveProject';
+import FileConversionStage from './components/FileConversionStage';
+import convertFile from './services/fileConversion';
 
 
 
@@ -321,22 +323,19 @@ function App() {
     },
     { 
       key: 'side5', 
-      label: 'DEBUG1',
+      label: '文件转换',
       onClick: () => {
-        // console.log(rectView)
-        setDebugTempVar(exportDataToJSON());
+        setCurrStage('conv');
       } 
     },
     { 
       key: 'side6', 
-      label: 'DEBUG2',
+      label: 'DEBUG',
       onClick: () => {
-        importDataFromJSON(debugTempVar);
+        console.log(rectView)
       } 
     }
   ];
-
-  const [debugTempVar, setDebugTempVar] = useState('');
   
   const items1 = [
   
@@ -399,6 +398,13 @@ function App() {
       document.body.appendChild(scriptElement4);
     }
   }, [showChat]);
+
+  // 文档格式工厂
+  const [convFileType, setConvFileType] = useState(null);
+  const handelFileConvSubmit = () => {
+    setCurrStage('doc');
+    convertFile(convFileType);
+  };
 
   return (
     
@@ -491,21 +497,35 @@ function App() {
                     </Modal>
                     
                     {currStage === 'plot' && (
-                        <Modal 
-                          open={true} 
-                          width={stageWidth * 0.9} 
-                          onOk={() => {setCurrStage('doc')}} 
-                          onCancel={() => {setCurrStage('doc')}} 
-                        >
-                          <PlotStageComponent
-                            width={stageWidth * 0.9 - 70} 
-                            height={stageHeight * 0.9 - 70} 
-                            cropCanvas={cropCanvas}
-                            currStage={currStage}
-                            setFormValue={setFormValue}
-                          />
-                        </Modal>
-                      )}
+                      <Modal 
+                        open={true} 
+                        width={stageWidth * 0.9} 
+                        onOk={() => {setCurrStage('doc')}} 
+                        onCancel={() => {setCurrStage('doc')}} 
+                      >
+                        <PlotStageComponent
+                          width={stageWidth * 0.9 - 70} 
+                          height={stageHeight * 0.9 - 70} 
+                          cropCanvas={cropCanvas}
+                          currStage={currStage}
+                          setFormValue={setFormValue}
+                        />
+                      </Modal>
+                    )}
+                    {currStage === 'conv' && (
+                      <Modal 
+                        open={true} 
+                        width={stageWidth * 0.8} 
+                        onOk={handelFileConvSubmit} 
+                        onCancel={() => {setCurrStage('doc')}} 
+                      >
+                        <FileConversionStage
+                          width={stageWidth * 0.8}
+                          height={stageHeight * 0.8}
+                          setConvFileType = {setConvFileType}
+                        />
+                      </Modal>
+                    )}
                   </Layout>
                 </>
               }/>
