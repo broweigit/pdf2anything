@@ -23,6 +23,9 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
   const [stageRef, setStageRef] = useState(null);
   const [floatButtonOffset, setFloatButtonOffset] = useState(60);
 
+  // 用于使部分Stage内组件显示大小恒定：
+  const [antiScale, setAntiScale] = useState(1);
+
   const handleDrop = (e) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
@@ -85,6 +88,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
       }
       stage.scale({ x: newScale, y: newScale });
       stage.position({x: offX, y: offY})
+      setAntiScale(1 / newScale);
     }
   }
 
@@ -112,6 +116,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
     };
     const newScale = Math.max(0.2, stage.scaleX() - e.evt.deltaY / 2000); // 计算新的缩放比例
     stage.scale({ x: newScale, y: newScale }); // 缩放画布
+    setAntiScale(1 / newScale);
     const newPos = {
       x: pointerPos.x - mousePointTo.x * newScale, // 计算缩放后画布需要平移的距离
       y: pointerPos.y - mousePointTo.y * newScale,
@@ -250,6 +255,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
     setSelectedId(null);
     const stage = stageRef;
     stage.scale({ x: 1, y: 1 });
+    setAntiScale(1);
     stage.position({x: 0, y: 0})
     resetUpload();
   };
@@ -341,6 +347,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                     onSelect={rect.onSelect}
                     callRectView={(caller, newProps) => callRectView(rect.id, caller, newProps)}
                     modalUtils={{setModalVisible, callbackRef}}
+                    antiScale={antiScale}
                   />
                 ))}
 

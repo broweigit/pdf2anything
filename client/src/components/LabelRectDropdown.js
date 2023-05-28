@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Rect, Text, Layer, Group } from "react-konva";
   
-const LabelRectDropdown = ({ x, y, width, height, handleIdentify, handleEditType, handleRemove }) => {
+const LabelRectDropdown = ({ x, y, width, height, handleIdentify, handleEditType, handleRemove, antiScale }) => {
     
     const items = [
         {
@@ -28,9 +28,10 @@ const LabelRectDropdown = ({ x, y, width, height, handleIdentify, handleEditType
                 <Group
                     key={item.key}
                     x={x}
-                    y={y + height * (index)}
+                    y={y + height * (index) * antiScale}
                     onClick={item.handleSelect}
                     onTap={item.handleSelect}
+                    scale={{x: antiScale, y: antiScale}}
                 >
                     <Rect
                     width={width}

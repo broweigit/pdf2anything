@@ -13,6 +13,9 @@ const PlotStageComponent = ({ width, height, cropCanvas, currStage, setFormValue
   const imgLayerRef = useRef(null);
   const dotLayerRef = useRef(null);
 
+  // 用于使部分Stage内组件显示大小恒定：
+  const [antiScale, setAntiScale] = useState(1);
+
   // 拾色器
   const [color, setColor] = useState('');
   const [rgb, setRgb] = useState('');
@@ -85,6 +88,7 @@ const PlotStageComponent = ({ width, height, cropCanvas, currStage, setFormValue
           offY = (stage.height() - stage.width() / ratio) / 2;
         }
         stage.scale({ x: newScale, y: newScale });
+        setAntiScale(1 / newScale);
         stage.position({x: offX, y: offY});
         layer.batchDraw();
         layer.add(
@@ -113,6 +117,7 @@ const PlotStageComponent = ({ width, height, cropCanvas, currStage, setFormValue
     };
     const newScale = Math.max(0.3, stage.scaleX() - e.evt.deltaY / 500); // 计算新的缩放比例
     stage.scale({ x: newScale, y: newScale }); // 缩放画布
+    setAntiScale(1 / newScale);
     const newPos = {
       x: pointerPos.x - mousePointTo.x * newScale, // 计算缩放后画布需要平移的距离
       y: pointerPos.y - mousePointTo.y * newScale,
@@ -271,7 +276,7 @@ const PlotStageComponent = ({ width, height, cropCanvas, currStage, setFormValue
 
               <Layer ref={dotLayerRef}>
                 {dotsData.map((dot) => (
-                  <LabelDot label={dot.label} x={dot.x} y={dot.y} dataX={dot.dataX} dataY={dot.dataY} />
+                  <LabelDot label={dot.label} x={dot.x} y={dot.y} dataX={dot.dataX} dataY={dot.dataY} antiScale={antiScale} />
                 ))}
               </Layer>
               { (opState === 'Ref') && (

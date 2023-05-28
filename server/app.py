@@ -128,6 +128,13 @@ def create_app():
             bbox = [int(float(i)) for i in bbox[1:-1].split(',')]
 
             x, y, w, h = bbox
+            img_height, img_width = current_app.fm.img_list[int(page_id)].shape[:2]
+
+            # Adjust x, y, w, h if they exceed image boundaries
+            x = max(x, 0)
+            y = max(y, 0)
+            w = min(w, img_width - x)
+            h = min(h, img_height - y)
             img_roi = current_app.fm.img_list[int(page_id)][y:y+h, x:x+w]
 
             # cv2.imwrite('./roi.jpg', img_roi)
@@ -147,6 +154,13 @@ def create_app():
             bbox = [int(float(i)) for i in bbox[1:-1].split(',')] 
 
             x, y, w, h = bbox
+            img_height, img_width = current_app.fm.img_list[int(page_id)].shape[:2]
+
+            # Adjust x, y, w, h if they exceed image boundaries
+            x = max(x, 0)
+            y = max(y, 0)
+            w = min(w, img_width - x)
+            h = min(h, img_height - y)
             img_roi = current_app.fm.img_list[int(page_id)][y:y+h, x:x+w]
 
             # cv2.imwrite('./roi.jpg', img_roi)

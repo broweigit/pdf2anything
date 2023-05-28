@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Circle, Label, Tag, Text } from 'react-konva';
 
-const LabelDot = ({ label, x, y, dataX, dataY }) => {
+const LabelDot = ({ label, x, y, dataX, dataY, antiScale }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -33,9 +33,10 @@ const LabelDot = ({ label, x, y, dataX, dataY }) => {
         fill={fill}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        scale={{x: antiScale, y: antiScale}}
       />
       {isHovered && (
-        <Label x={x} y={y - 20}>
+        <Label x={x} y={y - 20} scale={{x: antiScale, y: antiScale}}>
           <Tag
             fill="#FFF"
             stroke="#000"

@@ -5,7 +5,7 @@ import { Button, Modal } from 'antd';
 import LabelRectDropdown from "./LabelRectDropdown";
 import calcImagePos from "../utils/calcImagePos";
 
-const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils }) => {
+const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, callRectView, modalUtils, antiScale }) => {
   const groupRef = useRef();
   const labelRef = useRef();
   const rectRef = useRef();
@@ -80,6 +80,7 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
     const rect = rectRef.current;
     const stage = rect.getStage();
     const rectAbs = rect.getClientRect();
+    
     console.log({
       x: (rectAbs.x - stage.x()) / stage.scaleX(), 
       y: (rectAbs.y - stage.y()) / stage.scaleY(), 
@@ -141,6 +142,10 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
       callRectView('delete', {})
   };
 
+  // useEffect (() => {
+  //   console.log(antiScale);
+  // }, [antiScale])
+
   return (
     <React.Fragment>
       <Group
@@ -163,7 +168,7 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
           stroke={stroke}
           fill={fill}
         />
-        <Label y={-18} opacity={0.65} ref={labelRef}>
+        <Label y={-18} opacity={0.65} ref={labelRef} scale={{x: antiScale, y: antiScale}}>
           <Tag
             pointerDirection={'left'}
             pointerWidth={20}
@@ -210,6 +215,7 @@ const LabelRect = ({ id, x, y, width, height, initLabel, isSelected, onSelect, c
             handleIdentify={handleIdentify}
             handleEditType={handleEditType}
             handleRemove={handleRemove}
+            antiScale={antiScale}
           />
       )}
     </React.Fragment>
