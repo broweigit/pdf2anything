@@ -5429,4 +5429,4 @@ wpd.XYAxes = (function() {
 
     return AxesObj;
 })();
-module.exports = { wpd: wpd };
+export const WPD = wpd;

@@ -4,3 +4,5 @@ flask_session/
 data.db
 doc_recovery/
 output.pdf
+templates/
+static/

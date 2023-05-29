@@ -1,4 +1,4 @@
-from flask import Flask, request, current_app, jsonify, make_response, session, send_from_directory, send_file
+from flask import Flask, request, current_app, jsonify, make_response, session, send_from_directory, send_file, render_template
 from flask_cors import CORS
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
@@ -84,12 +84,17 @@ def create_app():
         db.create_all()
         click.echo('Initialized database.')  # 输出提示信息
 
-
-
     @app.route('/')
     def index():
-        return send_from_directory('static', 'index.html')
-        
+        return render_template('index.html')  # 渲染打包好的React App的页面
+    
+    @app.route('/<path:filename>')
+    def manifest(filename):
+        return send_from_directory('./templates', filename)
+    
+    # @app.route('/<path:filename>')
+    # def root(filename):
+    #     return send_from_directory('./public', filename)
 
     @app.route('/upload-image', methods=['POST'])
     def upload_image():
@@ -401,4 +406,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0', port='5000')

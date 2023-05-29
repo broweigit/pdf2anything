@@ -1,6 +1,6 @@
 import convertCanvasToJimp from "../utils/convertCanvas2Jimp.ts";
 
-const wpd = require("../wpd/wpd_node.js").wpd
+import { WPD as wpd } from "../wpd/wpd_node.js";
 
 async function extractPlot(cropCanvas, setFormValue, x1, x2, y1, y2, refColor) {
   // const bitmapData = bitmap.getData(); // 获取Bitmap的数据

@@ -5,6 +5,7 @@
   "author": "Browei",
   "license": "MIT",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@babel/core": "^7.16.0",
@@ -41,6 +42,7 @@
     "jimp": "^0.22.8",
     "jszip": "^3.10.1",
     "konva": "^9.0.1",
+    "make-dir-cli": "^3.0.0",
     "mini-css-extract-plugin": "^2.4.5",
     "moment": "^2.29.4",
     "postcss": "^8.4.4",
@@ -74,7 +76,9 @@
   "scripts": {
     "electron-start": "electron ./src/electron",
     "start": "node scripts/start.js",
+    "prebuild": "rimraf -rf ../server/templates && rimraf -rf ../server/static",
     "build": "node scripts/build.js",
+    "postbuild": "npx make-dir-cli ../server/templates && npx move-cli build/static ../server && rimraf -rf build/static && node scripts/moveFiles.js",
     "test": "node scripts/test.js"
   },
   "eslintConfig": {
@@ -99,7 +103,8 @@
     "@babel/preset-env": "^7.21.5",
     "@babel/register": "^7.21.0",
     "@types/react": "^18.2.6",
-    "electron": "^24.3.0"
+    "electron": "^24.3.0",
+    "rimraf": "^5.0.1"
   },
   "jest": {
     "roots": [
