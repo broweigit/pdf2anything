@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function loadProject(projectId, loadProjectFromBackend) {
-  axios.get('http://127.0.0.1:5000/load-project', {
+  axios.get(BASE_URL + '/load-project', {
     params: {
       pid: projectId
     }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function sendImage(img, list_resolve) {
   // 创建 FormData 对象
@@ -7,7 +8,7 @@ function sendImage(img, list_resolve) {
   // 将图片添加到 FormData 中
   formData.append('image', img);
 
-  axios.post('http://127.0.0.1:5000/upload-image', formData)
+  axios.post(BASE_URL + '/upload-image', formData)
     .then((response) => {
         return response.data;
     })

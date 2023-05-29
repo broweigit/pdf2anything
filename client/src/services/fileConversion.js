@@ -1,5 +1,6 @@
 import axios from 'axios';
 import JSZip from 'jszip';
+import { BASE_URL } from "../utils/url";
 
 const downloadImagesAsZip = (loadedImages) => {
   const zip = new JSZip();
@@ -19,7 +20,7 @@ const downloadImagesAsZip = (loadedImages) => {
 
 const convertFile = async (fileType) => {
 
-  axios.get('http://127.0.0.1:5000/convert-file', {
+  axios.get(BASE_URL + '/convert-file', {
       params: {
         fileType: fileType,
       }

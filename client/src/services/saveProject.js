@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function saveProject(projectName, jsonData, projectDate, userInfo) {
 
@@ -9,7 +10,7 @@ function saveProject(projectName, jsonData, projectDate, userInfo) {
   formData.append('userId', userInfo.userId);
 
 
-  axios.post('http://127.0.0.1:5000/save-project', formData)
+  axios.post(BASE_URL + '/save-project', formData)
     .then((response) => {
       // 处理请求成功的逻辑
       console.log('保存项目成功');

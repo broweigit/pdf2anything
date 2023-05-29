@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function loadProjectList(setProjectList, userInfo) {
 
-  axios.get('http://127.0.0.1:5000/get-project-list', 
+  axios.get(BASE_URL + '/get-project-list', 
     {params: {
         userId: userInfo.userId,
     }}

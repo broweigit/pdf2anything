@@ -1,7 +1,8 @@
 import axios from "axios";
+import { BASE_URL } from "../utils/url";
 
 function deleteProject(projectId) {
-    axios.get('http://127.0.0.1:5000/delete-project', {
+    axios.get(BASE_URL + '/delete-project', {
         params: {
             pid: projectId
         }

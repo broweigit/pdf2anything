@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function extractTable(bbox, setFormValue, pageId) {
   // 发送 GET 请求到 Flask 后端
-  axios.get('http://127.0.0.1:5000/table-extract', { 
+  axios.get(BASE_URL + '/table-extract', { 
         responseType: 'html', 
         params: {
             bbox: JSON.stringify(bbox),

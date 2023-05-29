@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function userLogin(values, setUserInfo, setIsLogin) {
-  axios.get('http://127.0.0.1:5000/user/login', { 
+  axios.get(BASE_URL + '/user/login', { 
         params: {
             account: values.account,
             password: values.password

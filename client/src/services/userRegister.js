@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function userRegister(values, setModalStatus, setAccountPlaceHolder, setpasswordPlaceHolder) {
-  axios.get('http://127.0.0.1:5000/user/register', { 
+  axios.get(BASE_URL + '/user/register', { 
         params: {
             username: values.username,
             password: values.password

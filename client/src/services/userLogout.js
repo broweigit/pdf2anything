@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function userLogout(setIsLogin) {
-  axios.get('http://127.0.0.1:5000/user/logout')
+  axios.get(BASE_URL + '/user/logout')
     .then(function(response) {
         console.log(response.data);
         setIsLogin(false);

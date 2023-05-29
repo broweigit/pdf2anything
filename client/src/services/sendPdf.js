@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 function sendPdf(file, list_resolve) {
   // 创建 FormData 对象
@@ -7,7 +8,7 @@ function sendPdf(file, list_resolve) {
   // 将文件添加到 FormData 中
   formData.append('file', file);
 
-  axios.post('http://127.0.0.1:5000/upload-pdf', formData)
+  axios.post(BASE_URL + '/upload-pdf', formData)
     .then(function (response) {
         return response.data;
     })

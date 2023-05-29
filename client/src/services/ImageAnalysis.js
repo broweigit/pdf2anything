@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { BASE_URL } from "../utils/url";
 
 const imageJAnalysis = async (file, len) => {
   try {
@@ -6,7 +7,7 @@ const imageJAnalysis = async (file, len) => {
     formData.append('image', file);
     formData.append('len', len);
 
-    const response = await axios.post('http://127.0.0.1:5000/imagej-analysis', formData, {
+    const response = await axios.post(BASE_URL + '/imagej-analysis', formData, {
       headers: {
         'Content-Type': 'image',
       },

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef }  from 'react';
 import { List, Avatar, Input, Button, Space } from 'antd';
 import { SendOutlined, DeleteOutlined } from '@ant-design/icons';
 import { resetChat } from '../services/reset';
+import { BASE_URL } from '../utils/url';
 
 const ChatBox = ({callChatFunc}) => {
 
@@ -29,7 +30,7 @@ const ChatBox = ({callChatFunc}) => {
       alert('请输入内容');
       return;
     }
-    const eventSource = new EventSource(`http://localhost:5000/chat-stream?prompt=${prompt}`);
+    const eventSource = new EventSource(`${BASE_URL}/chat-stream?prompt=${prompt}`);
     let streaming = false;
     let answer = '';
 

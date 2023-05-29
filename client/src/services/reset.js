@@ -1,5 +1,7 @@
+import { BASE_URL } from "../utils/url";
+
 function resetUpload() {
-    fetch('http://localhost:5000/upload-reset', {
+    fetch(BASE_URL + '/upload-reset', {
       method: 'POST',
     })
       .then((response) => {
@@ -15,7 +17,7 @@ function resetUpload() {
 }
 
 function resetChat() {
-    fetch('http://localhost:5000/chat-reset', {
+    fetch(BASE_URL + '/chat-reset', {
       method: 'POST',
     })
       .then((response) => {
