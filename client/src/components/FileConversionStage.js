@@ -91,7 +91,7 @@ const FileConversionStage = ({width, height, setConvFileType}) => {
                 x: fileType.x,
                 y: fileType.y,
                 width: width / 8,
-                height: height / 4,
+                height: height / 3,
                 image: img,
                 opacity: 0.3,
               });

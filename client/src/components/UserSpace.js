@@ -8,7 +8,7 @@ import deleteProject from '../services/deleteProject';
 
 const { Title } = Typography;
 
-function UserInterface({ userInfo, setShowLogin, loadProjectFromBackend }) {
+function UserInterface({ userInfo, setShowLogin, loadProjectFromBackend,setProjectName }) {
   const [projectList, setProjectList] = useState([]);
   const navigate = useNavigate();
 
@@ -68,7 +68,10 @@ function UserInterface({ userInfo, setShowLogin, loadProjectFromBackend }) {
               <Col key={index} span={8}>
                 <Card
                   title={project.name}
-                  extra={<a onClick={(e) => {handleProjectDetail(e, project)}}>项目详情</a>}
+                  extra={<a onClick={(e) => {
+                    setProjectName(project.name)
+                    handleProjectDetail(e, project)
+                  }}>项目详情</a>}
                   style={{
                     height: '100%',
                     borderRadius: '8px',

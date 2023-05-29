@@ -19,7 +19,7 @@ const { Content } = Layout;
 const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRectView, 
   selectedId, setSelectedId, imgList, setImgList, selPageId, setSelPageId, cropCanvas, setCropCanvas, 
   ocrLang, setCurrStage, formValue, setFormValue, handleOpenSaveModal, refreshStagePosFunc, callChatFunc, 
-  showChat, setRepaintReqOnViewUpdate
+  showChat, setRepaintReqOnViewUpdate, projectName
 }) => {
 
   const [stageRef, setStageRef] = useState(null);
@@ -331,6 +331,8 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
     setModalVisible(false);
   };
 
+  // tools 的动效 TODO
+
   // 主题颜色
   const {
     token: { colorPrimaryBgHover, colorTextHeading, colorPrimary, colorFillAlter, colorBorderSecondary, borderRadiusLG },
@@ -403,23 +405,23 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                     )}
                 </Layer>
                 <Layer>
-                {rectLayer.map((rect) => (
-                  <LabelRect
-                    id={rect.id}
-                    x={rect.x}
-                    y={rect.y}
-                    width={rect.width}
-                    height={rect.height}
-                    initLabel={rect.label}
-                    isSelected={selectedId === rect.id}
-                    onSelect={rect.onSelect}
-                    callRectView={(caller, newProps) => callRectView(rect.id, caller, newProps)}
-                    modalUtils={{setModalVisible, callbackRef}}
-                    antiScale={antiScale}
-                    hasOCR={rect.hasOCR}
-                    showChat={showChat}
-                  />
-                ))}
+                  {rectLayer.map((rect) => (
+                      <LabelRect
+                        id={rect.id}
+                        x={rect.x}
+                        y={rect.y}
+                        width={rect.width}
+                        height={rect.height}
+                        initLabel={rect.label}
+                        isSelected={selectedId === rect.id}
+                        onSelect={rect.onSelect}
+                        callRectView={(caller, newProps) => callRectView(rect.id, caller, newProps)}
+                        modalUtils={{setModalVisible, callbackRef}}
+                        antiScale={antiScale}
+                        hasOCR={rect.hasOCR}
+                        showChat={showChat}
+                      />
+                  ))}
 
                 </Layer>
             </Stage>
@@ -482,6 +484,7 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
                 right: floatButtonOffset,
               }}
               trigger="click"
+              className='floatbutton'
             >
               <FloatButton
                 icon={<FileOutlined />}
@@ -519,13 +522,15 @@ const StageComponent = ({ width, height, setRectData, rectLayer, rectView, setRe
               cropCanvas={cropCanvas}
             />
             <Drawer
-              placement="bottom"
+              title={`当前项目：${projectName}    ⬇下滚查看工具栏`}
+              placement="top"
               mask={false}
               open={imgList}
               height={55}
               closable={false}
               zIndex={'0'}
               getContainer={false}
+              className='tool'
             >
               <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
                 {cardToolData.map((tool, index) => (

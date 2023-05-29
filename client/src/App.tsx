@@ -46,6 +46,8 @@ function App() {
   const [userInfo, setUserInfo] = useState(null);
   // OCR识别结果表单的值，由于plot需要，故提升至App.js
   const [formValue, setFormValue] = useState(''); 
+  // 当前项目名称
+  const [projectName, setProjectName] = useState('未保存');
 
   // 呼叫chatGPT的函数，由ChatBox定义，传递给LabelRect
   const callChatFunc = useRef(null);
@@ -174,6 +176,7 @@ function App() {
   const handleFormSubmit = (values) => {
     setModalVisible(false);
     const projectName = values.projectName;
+    setProjectName(values.projectName);
     // 调用保存项目的函数
     saveProjectToBackend(projectName);
   };
@@ -316,9 +319,16 @@ function App() {
         setShowChat(!showChat);
       } 
     },
-    
     { 
       key: 'side4', 
+      label: '文件转换',
+      onClick: () => {
+        setCurrStage('conv');
+      } 
+    },
+    
+    { 
+      key: 'side5', 
       label: '设置',
       
       children: [
@@ -339,13 +349,6 @@ function App() {
         }, 
         { key: 'side4-7', label: '变更主题', onClick:  () => {handleThemeAlgChange(themeState, setThemeState);} }
       ],
-    },
-    { 
-      key: 'side5', 
-      label: '文件转换',
-      onClick: () => {
-        setCurrStage('conv');
-      } 
     },
     { 
       key: 'side6', 
@@ -445,6 +448,7 @@ function App() {
                     userInfo={userInfo}
                     setShowLogin={setShowLogin}
                     loadProjectFromBackend={loadProjectFromBackend}
+                    setProjectName={setProjectName}
                   />
                 }
               />
@@ -452,7 +456,7 @@ function App() {
                 <>
                   <Layout>  
                     <SidebarComponent menuItems={items2} />
-                    <Layout>
+                    <Layout className='stage'>
                       <StageComponent 
                         width={stageWidth} 
                         height={stageHeight} 
@@ -477,10 +481,11 @@ function App() {
                         callChatFunc={callChatFunc}
                         showChat={showChat}
                         setRepaintReqOnViewUpdate={setRepaintReqOnViewUpdate}
+                        projectName={projectName}
                       />
                     </Layout>
                     { showChat && (
-                      <Layout>
+                      <Layout className='aichatbox'>
                         <ChatBox callChatFunc={callChatFunc} />
                         <div id="landlord">
                           <div className="message" style={{opacity: 0}}></div>
@@ -537,13 +542,14 @@ function App() {
                     {currStage === 'conv' && (
                       <Modal 
                         open={true} 
-                        width={stageWidth * 0.8} 
+                        width={window.innerWidth * 0.7} 
                         onOk={handelFileConvSubmit} 
                         onCancel={() => {setCurrStage('doc')}} 
+                        className='convmodal'
                       >
                         <FileConversionStage
-                          width={stageWidth * 0.8}
-                          height={stageHeight * 0.75}
+                          width={window.innerWidth * 0.7}
+                          height={window.innerHeight * 0.6}
                           setConvFileType = {setConvFileType}
                         />
                       </Modal>

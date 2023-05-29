@@ -20,6 +20,7 @@ class ChatSystem():
     def __init__(self):
         self.conversation_list = initial_conversation
         self.max_conversation = 5
+        self.ai = 'gpt-3.5-turbo'
 
     def stream_events(self, completion):
         delay_time = 0.05
@@ -43,7 +44,7 @@ class ChatSystem():
         print(self.conversation_list)
 
         completion = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
+            model=self.ai,
             messages=self.conversation_list,
             max_tokens=max_response_length,
             temperature=1,

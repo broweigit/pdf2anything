@@ -8,7 +8,7 @@ const SiderbarComponent = ({ menuItems }) => {
     token: { colorFillLayout },
   } = theme.useToken();
   return (
-    <Sider width={200} style={{ background: colorFillLayout }}>
+    <Sider width={200} style={{ background: colorFillLayout }} className='sider'>
     <Menu
       mode="inline"
       defaultSelectedKeys={['1']}
