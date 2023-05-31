@@ -24,6 +24,7 @@ import { resetUpload } from './services/reset';
 import saveProject from './services/saveProject';
 import FileConversionStage from './components/FileConversionStage';
 import convertFile from './services/fileConversion';
+import htmlToExcel from './utils/htmlToExcel';
 
 
 
@@ -425,7 +426,18 @@ function App() {
   const [convFileType, setConvFileType] = useState(null);
   const handelFileConvSubmit = () => {
     setCurrStage('doc');
-    convertFile(convFileType);
+    if (convFileType === 'xls' && imgList) {
+      rectView[selPageId].forEach((item: any) => {
+        if (item.label === 'table' && item.hasOwnProperty('result')) {
+          const htmlTable = item.result;
+          const filename = `table${item.id}`;
+          htmlToExcel(htmlTable, filename);
+        }
+      });
+    }
+    else {
+      convertFile(convFileType);
+    }
   };
 
   return (
