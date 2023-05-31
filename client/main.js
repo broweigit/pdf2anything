@@ -12,9 +12,17 @@ const createWindow = () => {
     }
   })
 
-  // 加载 index.html
-  // mainWindow.loadFile('index.html')
- mainWindow.loadURL('http://localhost:3000/');
+  // 加载 index.html：
+
+  // Debug
+  // mainWindow.loadURL('http://localhost:3000/');
+
+  // Build
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, './build/index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
 
   // 打开开发工具
   // mainWindow.webContents.openDevTools()
