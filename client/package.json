@@ -78,7 +78,9 @@
     "electron-start": "electron .",
     "electron-package": "electron-packager . pdf2anything-electron --platform=win32 --arch=x64 --out ./build-electron --electron-version 2.0.6",
     "start": "node scripts/start.js",
+    "prebuild": "rimraf -rf ../server/templates && rimraf -rf ../server/static",
     "build": "node scripts/build.js",
+    "postbuild": "npx make-dir-cli ../server/templates && npx move-cli build/static ../server && rimraf -rf build/static && node scripts/moveFiles.js",
     "test": "node scripts/test.js"
   },
   "eslintConfig": {
